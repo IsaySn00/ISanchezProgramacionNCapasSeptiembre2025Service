@@ -166,7 +166,7 @@ public class UsuarioRestController {
         return ResponseEntity.status(result.status).body(result);
     }
 
-    @GetMapping("/GetUsuariosDinamico")
+    @PostMapping("/GetUsuariosDinamico")
     public ResponseEntity GetDinamico(@RequestBody UsuarioJPA usuario) {
         Result result = new Result();
 

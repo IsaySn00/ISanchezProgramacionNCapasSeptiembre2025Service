@@ -1,6 +1,10 @@
 package com.digis01.ISanchezProgramacionNCapasSeptiembre2025.DAO;
 
+import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.ColoniaJPA;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.DireccionJPA;
+import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.EstadoJPA;
+import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.MunicipioJPA;
+import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.PaisJPA;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.UsuarioJPA;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.Result;
 import jakarta.persistence.EntityManager;
@@ -12,6 +16,8 @@ import org.springframework.stereotype.Repository;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
@@ -175,7 +181,7 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
         try {
             StringBuilder jpql = new StringBuilder();
             jpql.append("SELECT u.IdUsuario, u.NombreUsuario, u.ApellidoPatUsuario, u.ApellidoMatUsuario, ");
-            jpql.append("u.UserName, u.EmailUsuario, u.TelefonoUsuario, u.CelularUsuario, ");
+            jpql.append("u.UserName, u.EmailUsuario, u.FotoUsuario, u.TelefonoUsuario, u.CelularUsuario, ");
             jpql.append("d.Calle, d.NumeroInterior, d.NumeroExterior, ");
             jpql.append("c.NombreColonia, c.CodigoPostal, m.NombreMunicipio, e.NombreEstado, p.NombrePais ");
             jpql.append("FROM UsuarioJPA u ");
@@ -203,7 +209,7 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
             jpql.append(" ORDER BY u.IdUsuario ");
 
             TypedQuery<Object[]> query = entityManager.createQuery(jpql.toString(), Object[].class);
-            
+
             if (usuario.getNombreUsuario() != null && !usuario.getNombreUsuario().isEmpty()) {
                 query.setParameter("nombre", "%" + usuario.getNombreUsuario() + "%");
             }
@@ -217,8 +223,61 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
                 query.setParameter("idRol", usuario.RolJPA.getIdRol());
             }
 
-            List<Object[]> usuarios = query.getResultList();
-            result.object = usuarios;
+            List<Object[]> rows = query.getResultList();
+
+            Map<Integer, UsuarioJPA> mapUsuarios = new LinkedHashMap<>();
+
+            for (Object[] row : rows) {
+
+                Integer idUsuario = (Integer) row[0];
+
+                UsuarioJPA u = new UsuarioJPA();
+
+                if (mapUsuarios.containsKey(idUsuario)) {
+                    u = mapUsuarios.get(idUsuario);
+                } else {
+                    u.setIdUsuario(idUsuario);
+                    u.setNombreUsuario((String) row[1]);
+                    u.setApellidoPatUsuario((String) row[2]);
+                    u.setApellidoMatUsuario((String) row[3]);
+                    u.setUserName((String) row[4]);
+                    u.setEmailUsuario((String) row[5]);
+                    u.setFotoUsuario((byte[]) row[6]);
+                    u.setTelefonoUsuario((String) row[7]);
+                    u.setCelularUsuario((String) row[8]);
+                    
+                    u.DireccionesJPA = new ArrayList<>();
+                    
+                    mapUsuarios.put(idUsuario, u);
+                }
+
+                DireccionJPA d = new DireccionJPA();
+                d.setCalle((String) row[9]);
+                d.setNumeroInterior((String) row[10]);
+                d.setNumeroExterior((String) row[11]);
+
+                ColoniaJPA c = new ColoniaJPA();
+                c.setNombreColonia((String) row[12]);
+                c.setCodigoPostal((String) row[13]);
+
+                MunicipioJPA m = new MunicipioJPA();
+                m.setNombreMunicipio((String) row[14]);
+
+                EstadoJPA e = new EstadoJPA();
+                e.setNombreEstado((String) row[15]);
+
+                PaisJPA p = new PaisJPA();
+                p.setNombrePais((String) row[16]);
+
+                e.PaisJPA = p;
+                m.EstadoJPA = e;
+                c.MunicipioJPA = m;
+                d.ColoniaJPA = c;
+
+                u.DireccionesJPA.add(d);
+            }
+
+            result.object = new ArrayList<>(mapUsuarios.values());
 
             result.correct = true;
 
