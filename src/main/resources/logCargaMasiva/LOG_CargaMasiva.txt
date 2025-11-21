@@ -1,0 +1,6 @@
+20251121164140usuarios.txt|99422671948427982612805600647497131148683096662609891314578948393155043424586|Error|20251121164140|Linea 3 error en: Apellido Paterno porque El campo solo permite letras, Linea 4 error en: Fecha de Nacimiento porque La fecha de nacimiento no es valida, Linea 5 error en: Contraseña porque La contraseña tiene que tiener al menos un carácter especial, Linea 6 error en: Contraseña porque La contraseña tiene que tiener al menos un numero, Linea 6 error en: Contraseña porque La contraseña tiene que tiener al menos 8 carácteres, 
+
+20251121164379usuarios.txt|26413751609569338562589028656166866098499278245598979564743161341070222610986|Error|20251121164379|Linea 3 error en: Apellido Paterno porque El campo solo permite letras, Linea 4 error en: Fecha de Nacimiento porque La fecha de nacimiento no es valida, Linea 5 error en: Contraseña porque La contraseña tiene que tiener al menos un carácter especial, Linea 6 error en: Contraseña porque La contraseña tiene que tiener al menos un numero, Linea 6 error en: Contraseña porque La contraseña tiene que tiener al menos 8 carácteres, 
+
+20251121164333usuarios.txt|27318591232210588080517325903736449678428801608450877853686379323981670103935|Valido|20251121164333|
+
