@@ -65,15 +65,12 @@ public class UsuarioRestController {
     }
 
     @PostMapping(value = "/usuario", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity AddUsuario(@RequestPart("usuario") String usuarioJSON,
+    public ResponseEntity AddUsuario(@RequestPart("usuario") UsuarioJPA usuario,
             @RequestPart("imagenFile") MultipartFile imagenFile) {
 
         Result result = new Result();
 
         try {
-
-            ObjectMapper mapper = new ObjectMapper();
-            UsuarioJPA usuario = mapper.readValue(usuarioJSON, UsuarioJPA.class);
 
             if (imagenFile != null) {
                 usuario.setFotoUsuario(imagenFile.getBytes());
