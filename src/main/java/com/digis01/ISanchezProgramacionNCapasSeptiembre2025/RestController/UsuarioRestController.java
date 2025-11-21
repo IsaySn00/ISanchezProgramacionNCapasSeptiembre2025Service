@@ -135,14 +135,11 @@ public class UsuarioRestController {
     }
 
     @PatchMapping("/updateImgUsuario")
-    public ResponseEntity UpdateImgUsuario(@RequestPart("usuario") String usuarioJSON,
+    public ResponseEntity UpdateImgUsuario(@RequestPart("usuario") UsuarioJPA usuario,
             @RequestPart("imgFile") MultipartFile imgFile) {
         Result result = new Result();
 
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            UsuarioJPA usuario = mapper.readValue(usuarioJSON, UsuarioJPA.class);
-
             if (imgFile != null) {
                 usuario.setFotoUsuario(imgFile.getBytes());
             }
