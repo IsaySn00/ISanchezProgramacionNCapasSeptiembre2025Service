@@ -56,4 +56,23 @@ public class ColoniaRestController {
 
         return ResponseEntity.status(result.status).body(result);
     }
+    
+    @GetMapping("/colonias")
+    public ResponseEntity GetCodigoPostal(@RequestParam("nombreColonia") String nombreColonia, @RequestParam("idMunicipio") int idMunicipio){
+        Result result = new Result();
+        
+        try {
+            result = coloniaJPADAOImplementation.GetCodigoPostalByNameColoniaIdMnpio(nombreColonia, idMunicipio);
+            result.status = 201;
+            result.correct = true;
+
+        } catch (Exception ex) {
+            result.correct = false;
+            result.errorMessage = ex.getLocalizedMessage();
+            result.ex = ex;
+            result.status = 500;
+        }
+        
+        return ResponseEntity.status(result.status).body(result);
+    }
 }
