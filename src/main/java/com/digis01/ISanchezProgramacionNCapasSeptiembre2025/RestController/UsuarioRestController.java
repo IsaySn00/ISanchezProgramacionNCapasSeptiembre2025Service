@@ -16,6 +16,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
@@ -24,10 +26,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
@@ -210,8 +216,6 @@ public class UsuarioRestController {
     @PostMapping("/cargaMasiva")
     public ResponseEntity CargaMasiva(@RequestPart("archivo") MultipartFile archivo) {
 
-        ErrorCarga errorCarga = new ErrorCarga();
-
         Result result = new Result();
 
         List<UsuarioJPA> lista = new ArrayList<>();
@@ -279,10 +283,68 @@ public class UsuarioRestController {
             } catch (IOException e) {
                 System.out.println("Error al escribir en el archivo: " + e.getMessage());
             }
-            
+
             result.correct = true;
             result.status = listaError.size() > 0 ? 422 : 200;
-            result.object = listaError.size() > 0 ? listaError : "Se ha validado el archivo correctamente";
+            result.object = listaError.size() > 0 ? listaError : tkn;
+
+        } catch (Exception ex) {
+            result.correct = false;
+            result.errorMessage = ex.getLocalizedMessage();
+            result.ex = ex;
+            result.status = 500;
+        }
+
+        return ResponseEntity.status(result.status).body(result);
+    }
+
+    @GetMapping("/cargaMasiva")
+    public ResponseEntity CargaMasiva(@RequestParam("tkn") String tkn) {
+
+        Result result = new Result();
+        List<UsuarioJPA> lista = new ArrayList<>();
+
+        try {
+            String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmSS"));
+            
+            String pathLog = "src/main/resources/logCargaMasiva/LOG_CargaMasiva.txt";
+
+            String nombreFiltrado = encontrarEnLogTxt(pathLog, tkn);
+
+            String path = "src/main/resources/archivosCarga/" + nombreFiltrado;
+
+            File file = new File(path);
+            String extension = FilenameUtils.getExtension(path);
+
+            if (extension.equals("txt")) {
+                lista = LeerArchivoTXT(file);
+            } else if (extension.equals("xlsx")) {
+                lista = LecturaArchivoXLSX(file);
+            }
+
+            result = usuarioJPADAOImplemenation.AddUsuariosByFile(lista);
+
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(pathLog, true))) {
+
+                bw.write(fecha + nombreFiltrado);
+                bw.write("|");
+                bw.write(tkn);
+                bw.write("|");
+                bw.write("Procesado");
+                bw.write("|");
+                bw.write(fecha);
+                bw.write("|");
+
+                bw.newLine();
+                bw.newLine();
+
+            } catch (IOException e) {
+                System.out.println("Error al escribir en el archivo: " + e.getMessage());
+            }
+
+            result.object = "Se ha procesado el archivo exitosamente";
+            result.correct = true;
+            result.status = 201;
 
         } catch (Exception ex) {
             result.correct = false;
@@ -470,7 +532,7 @@ public class UsuarioRestController {
                 ErrorCarga errorCarga = new ErrorCarga();
                 errorCarga.linea = i + 1;
                 errorCarga.campo = "Contraseña";
-                errorCarga.descripcion = "La contraseña tiene que tiener al menos una letra mayúscula";
+                errorCarga.descripcion = "La contraseña tiene que tener al menos una letra mayúscula";
                 errorLista.add(errorCarga);
             }
 
@@ -478,7 +540,7 @@ public class UsuarioRestController {
                 ErrorCarga errorCarga = new ErrorCarga();
                 errorCarga.linea = i + 1;
                 errorCarga.campo = "Contraseña";
-                errorCarga.descripcion = "La contraseña tiene que tiener al menos un numero";
+                errorCarga.descripcion = "La contraseña tiene que tener al menos un numero";
                 errorLista.add(errorCarga);
             }
 
@@ -486,7 +548,7 @@ public class UsuarioRestController {
                 ErrorCarga errorCarga = new ErrorCarga();
                 errorCarga.linea = i + 1;
                 errorCarga.campo = "Contraseña";
-                errorCarga.descripcion = "La contraseña tiene que tiener al menos un carácter especial";
+                errorCarga.descripcion = "La contraseña tiene que tener al menos un carácter especial";
                 errorLista.add(errorCarga);
             }
 
@@ -494,7 +556,7 @@ public class UsuarioRestController {
                 ErrorCarga errorCarga = new ErrorCarga();
                 errorCarga.linea = i + 1;
                 errorCarga.campo = "Contraseña";
-                errorCarga.descripcion = "La contraseña tiene que tiener al menos 8 carácteres";
+                errorCarga.descripcion = "La contraseña tiene que tener al menos 8 carácteres";
                 errorLista.add(errorCarga);
             }
 
@@ -540,6 +602,29 @@ public class UsuarioRestController {
         }
 
         return hexString;
+    }
+
+    public String encontrarEnLogTxt(String path, String tkn) {
+
+        String found = "";
+
+        try (Stream<String> lines = Files.lines(Paths.get(path))) {
+            Optional<String> lineaFiltrada = lines.filter(linea -> linea.contains(tkn)).findFirst();
+
+            if (lineaFiltrada.isPresent()) {
+                String linea = lineaFiltrada.get();
+
+                String[] elementos = linea.split("\\|");
+
+                if (elementos.length > 0) {
+                    found = elementos[0];
+                }
+            }
+
+        } catch (IOException ex) {
+            Logger.getLogger(UsuarioRestController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return found;
     }
 
 }

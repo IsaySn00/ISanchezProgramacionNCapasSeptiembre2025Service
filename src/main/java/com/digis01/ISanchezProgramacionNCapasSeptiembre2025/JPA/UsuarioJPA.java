@@ -27,8 +27,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Entity
 @Table(name = "Usuario")
 public class UsuarioJPA {
-    
-     @Id
+
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idusuario")
     private int IdUsuario;
@@ -51,8 +51,10 @@ public class UsuarioJPA {
 
     @NotNull(message = "La contraseña no puede ser nula")
     @NotBlank(message = "La contraseña es obligatoria")
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
-            message = "La contraseña debe tener al menos una mayúscula, un número, un carácter especial, y mínimo 8 caracteres")
+    @Pattern(
+            regexp = "^(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+=<>?{}\\[\\]-]).{8,}$",
+            message = "La contraseña debe tener al menos una mayúscula, un número, un carácter especial, y mínimo 8 caracteres"
+    )
     @Column(name = "password", nullable = false)
     private String PasswordUser;
 
@@ -113,13 +115,14 @@ public class UsuarioJPA {
     @JsonProperty("direcciones")
     public List<DireccionJPA> DireccionesJPA = new ArrayList<>();
 
-    public UsuarioJPA() {}
+    public UsuarioJPA() {
+    }
 
     public UsuarioJPA(String nombreUsuario, String apellidoPatUsuario, String apellidoMatUsuario,
-                   String passwordUser, Date fechaNacimiento, String statusUsuario,
-                   Date fechaModificacion, byte[] fotoUsuario, String userName,
-                   String emailUsuario, String sexoUsuario, String telefonoUsuario,
-                   String celularUsuario, String curpUsuario) {
+            String passwordUser, Date fechaNacimiento, String statusUsuario,
+            Date fechaModificacion, byte[] fotoUsuario, String userName,
+            String emailUsuario, String sexoUsuario, String telefonoUsuario,
+            String celularUsuario, String curpUsuario) {
         this.NombreUsuario = nombreUsuario;
         this.ApellidoPatUsuario = apellidoPatUsuario;
         this.ApellidoMatUsuario = apellidoMatUsuario;
