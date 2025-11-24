@@ -15,4 +15,5 @@ public interface IUsuarioJPA {
     Result DeleteUsuario(int id);
     Result AddUsuariosByFile(List<UsuarioJPA> usuarios);
     Result GetAllDinamico(UsuarioJPA usuario);
+    Result BorradoLogicoUsuario(int idUsuario, int status);
 }

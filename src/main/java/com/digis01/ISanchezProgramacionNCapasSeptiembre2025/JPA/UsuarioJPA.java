@@ -65,7 +65,7 @@ public class UsuarioJPA {
     private Date FechaNacimiento;
 
     @Column(name = "status_usuario", length = 10)
-    private String StatusUsuario;
+    private int StatusUsuario;
 
     @Column(name = "fecha_modificacion")
     private Date FechaModificacion;
@@ -119,7 +119,7 @@ public class UsuarioJPA {
     }
 
     public UsuarioJPA(String nombreUsuario, String apellidoPatUsuario, String apellidoMatUsuario,
-            String passwordUser, Date fechaNacimiento, String statusUsuario,
+            String passwordUser, Date fechaNacimiento, int statusUsuario,
             Date fechaModificacion, byte[] fotoUsuario, String userName,
             String emailUsuario, String sexoUsuario, String telefonoUsuario,
             String celularUsuario, String curpUsuario) {
@@ -187,11 +187,11 @@ public class UsuarioJPA {
         return FechaNacimiento;
     }
 
-    public void setStatusUsuario(String StatusUsuario) {
+    public void setStatusUsuario(int StatusUsuario) {
         this.StatusUsuario = StatusUsuario;
     }
 
-    public String getStatusUsuario() {
+    public int getStatusUsuario() {
         return StatusUsuario;
     }
 

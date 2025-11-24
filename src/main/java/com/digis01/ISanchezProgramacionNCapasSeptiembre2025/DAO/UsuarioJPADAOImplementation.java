@@ -31,7 +31,7 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
         Result result = new Result();
         result.objects = new ArrayList<>();
         try {
-            TypedQuery<UsuarioJPA> queryUsuario = entityManager.createQuery("FROM UsuarioJPA", UsuarioJPA.class);
+            TypedQuery<UsuarioJPA> queryUsuario = entityManager.createQuery("FROM UsuarioJPA WHERE StatusUsuario = 1", UsuarioJPA.class);
             List<UsuarioJPA> usuariosJPA = queryUsuario.getResultList();
 
             result.object = usuariosJPA;
@@ -173,7 +173,7 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
         return result;
 
     }
-
+    
     @Override
     public Result GetAllDinamico(UsuarioJPA usuario) {
         Result result = new Result();
@@ -287,6 +287,28 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
             result.ex = ex;
         }
 
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public Result BorradoLogicoUsuario(int idUsuario, int status) {
+        Result result = new Result();
+        
+        try{
+            UsuarioJPA usuario = entityManager.find(UsuarioJPA.class, idUsuario);
+            
+            usuario.setStatusUsuario(status);
+            
+            entityManager.merge(usuario);
+            
+            result.correct = true;
+            
+        }catch(Exception ex){
+            result.correct = false;
+            result.errorMessage = ex.getLocalizedMessage();
+            result.ex = ex;
+        }
         return result;
     }
 

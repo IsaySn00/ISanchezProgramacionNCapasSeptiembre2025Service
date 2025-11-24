@@ -213,6 +213,26 @@ public class UsuarioRestController {
         }
         return ResponseEntity.status(result.status).body(result);
     }
+    
+    @PatchMapping("/usuario/{idUsuario}/bajaLogica")
+    public ResponseEntity BajaLogica(@PathVariable("idUsuario") int idUsuario, @RequestParam("status") int status){
+        Result result = new Result();
+        
+        try{
+            usuarioJPADAOImplemenation.BorradoLogicoUsuario(idUsuario, status);
+            result.correct = true;
+            result.status = 202;
+            result.object = "Se he hecho la baja del usuario";
+            
+        }catch(Exception ex){
+            result.correct = false;
+            result.errorMessage = ex.getLocalizedMessage();
+            result.ex = ex;
+            result.status = 500;
+        }
+        
+        return ResponseEntity.status(result.status).body(result);
+    }
 
     @PostMapping(value = "/cargaMasiva", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity CargaMasiva(@RequestPart("archivo") MultipartFile archivo) {
@@ -412,7 +432,7 @@ public class UsuarioRestController {
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
                 Date fechaNac = formatter.parse(campos[4]);
                 usuario.setFechaNacimiento(fechaNac);
-                usuario.setStatusUsuario(campos[5]);
+                usuario.setStatusUsuario(Integer.parseInt(campos[5]));
                 usuario.setFechaModificacion(new Date());
                 usuario.setUserName(campos[7]);
                 usuario.setEmailUsuario(campos[8]);
@@ -466,7 +486,7 @@ public class UsuarioRestController {
                 }
 
                 usuario.setFechaNacimiento(fechaNac);
-                usuario.setStatusUsuario(row.getCell(5).toString());
+                usuario.setStatusUsuario((int) row.getCell(5).getNumericCellValue());
                 usuario.setFechaModificacion(new Date());
                 usuario.setUserName(row.getCell(7).toString());
                 usuario.setEmailUsuario(row.getCell(8).toString());
