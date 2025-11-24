@@ -21,6 +21,7 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -213,7 +214,7 @@ public class UsuarioRestController {
         return ResponseEntity.status(result.status).body(result);
     }
 
-    @PostMapping("/cargaMasiva")
+    @PostMapping(value = "/cargaMasiva", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity CargaMasiva(@RequestPart("archivo") MultipartFile archivo) {
 
         Result result = new Result();
@@ -226,7 +227,7 @@ public class UsuarioRestController {
 
             String path = System.getProperty("user.dir");
             String pathArchivo = "src/main/resources/archivosCarga";
-            String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmSS"));
+            String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
             String pathDefinitivo = path + "/" + pathArchivo + "/" + fecha + archivo.getOriginalFilename();
             String tkn = "";
 
@@ -305,13 +306,51 @@ public class UsuarioRestController {
         List<UsuarioJPA> lista = new ArrayList<>();
 
         try {
-            String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmSS"));
-            
+            String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+
             String pathLog = "src/main/resources/logCargaMasiva/LOG_CargaMasiva.txt";
 
-            String nombreFiltrado = encontrarEnLogTxt(pathLog, tkn);
+            String linea = encontrarEnLogTxt(pathLog, tkn);
 
-            String path = "src/main/resources/archivosCarga/" + nombreFiltrado;
+            if (linea == null) {
+                result.correct = false;
+                result.status = 404;
+                result.errorMessage = "Token no encontrado";
+                return ResponseEntity.status(result.status).body(result);
+            }
+
+            String[] elem = linea.split("\\|");
+
+            String nombreArchivo = elem[0];
+            String fechaLinea = elem[3];
+
+            if (tokenExpirado(fechaLinea)) {
+                try (BufferedWriter bw = new BufferedWriter(new FileWriter(pathLog, true))) {
+
+                    bw.write(nombreArchivo);
+                    bw.write("|");
+                    bw.write(tkn);
+                    bw.write("|");
+                    bw.write("Error");
+                    bw.write("|");
+                    bw.write(fecha);
+                    bw.write("|");
+                    bw.write("Tiempo expirado");
+
+                    bw.newLine();
+                    bw.newLine();
+
+                } catch (IOException e) {
+                    System.out.println("Error al escribir en el archivo: " + e.getMessage());
+                }
+                
+                result.correct = false;
+                result.status = 408;
+                result.errorMessage = "Tiempo Expirado";
+                return ResponseEntity.status(result.status).body(result);
+            }
+
+            String path = "src/main/resources/archivosCarga/" + nombreArchivo;
 
             File file = new File(path);
             String extension = FilenameUtils.getExtension(path);
@@ -326,7 +365,7 @@ public class UsuarioRestController {
 
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(pathLog, true))) {
 
-                bw.write(fecha + nombreFiltrado);
+                bw.write(nombreArchivo);
                 bw.write("|");
                 bw.write(tkn);
                 bw.write("|");
@@ -606,25 +645,27 @@ public class UsuarioRestController {
 
     public String encontrarEnLogTxt(String path, String tkn) {
 
-        String found = "";
-
         try (Stream<String> lines = Files.lines(Paths.get(path))) {
-            Optional<String> lineaFiltrada = lines.filter(linea -> linea.contains(tkn)).findFirst();
 
-            if (lineaFiltrada.isPresent()) {
-                String linea = lineaFiltrada.get();
-
-                String[] elementos = linea.split("\\|");
-
-                if (elementos.length > 0) {
-                    found = elementos[0];
-                }
-            }
+            return lines
+                    .filter(linea -> linea.contains("|" + tkn + "|"))
+                    .findFirst()
+                    .orElse(null);
 
         } catch (IOException ex) {
             Logger.getLogger(UsuarioRestController.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
         }
-        return found;
     }
 
+    public boolean tokenExpirado(String fecha) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
+        LocalDateTime fechaArchivo = LocalDateTime.parse(fecha, formatter);
+        LocalDateTime fechaActual = LocalDateTime.now();
+
+        Duration diff = Duration.between(fechaArchivo, fechaActual);
+
+        return diff.toMinutes() >= 2;
+    }
 }
