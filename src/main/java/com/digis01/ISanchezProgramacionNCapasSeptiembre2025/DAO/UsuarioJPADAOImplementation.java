@@ -31,7 +31,7 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
         Result result = new Result();
         result.objects = new ArrayList<>();
         try {
-            TypedQuery<UsuarioJPA> queryUsuario = entityManager.createQuery("FROM UsuarioJPA WHERE StatusUsuario = 1", UsuarioJPA.class);
+            TypedQuery<UsuarioJPA> queryUsuario = entityManager.createQuery("FROM UsuarioJPA", UsuarioJPA.class);
             List<UsuarioJPA> usuariosJPA = queryUsuario.getResultList();
 
             result.object = usuariosJPA;
@@ -181,7 +181,7 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
         try {
             StringBuilder jpql = new StringBuilder();
             jpql.append("SELECT u.IdUsuario, u.NombreUsuario, u.ApellidoPatUsuario, u.ApellidoMatUsuario, ");
-            jpql.append("u.UserName, u.EmailUsuario, u.FotoUsuario, u.TelefonoUsuario, u.CelularUsuario, ");
+            jpql.append("u.UserName, u.EmailUsuario, u.FotoUsuario, u.TelefonoUsuario, u.CelularUsuario, u.StatusUsuario, ");
             jpql.append("d.Calle, d.NumeroInterior, d.NumeroExterior, ");
             jpql.append("c.NombreColonia, c.CodigoPostal, m.NombreMunicipio, e.NombreEstado, p.NombrePais ");
             jpql.append("FROM UsuarioJPA u ");
@@ -202,6 +202,11 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
             if (usuario.getApellidoMatUsuario() != null && !usuario.getApellidoMatUsuario().isEmpty()) {
                 jpql.append(" AND LOWER(u.ApellidoMatUsuario) LIKE LOWER(:apellidoMat) ");
             }
+            
+            if(usuario.getStatusUsuario() == 0 || usuario.getStatusUsuario() == 1){
+                jpql.append(" AND u.StatusUsuario = :status");
+            }
+            
             if (usuario.RolJPA.getIdRol() != 0) {
                 jpql.append(" AND r.IdRol = :idRol ");
             }
@@ -218,6 +223,9 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
             }
             if (usuario.getApellidoMatUsuario() != null && !usuario.getApellidoMatUsuario().isEmpty()) {
                 query.setParameter("apellidoMat", "%" + usuario.getApellidoMatUsuario() + "%");
+            }
+            if(usuario.getStatusUsuario() == 0 || usuario.getStatusUsuario() == 1){
+                query.setParameter("status", usuario.getStatusUsuario());
             }
             if (usuario.RolJPA.getIdRol() != 0) {
                 query.setParameter("idRol", usuario.RolJPA.getIdRol());
@@ -245,6 +253,7 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
                     u.setFotoUsuario((byte[]) row[6]);
                     u.setTelefonoUsuario((String) row[7]);
                     u.setCelularUsuario((String) row[8]);
+                    u.setStatusUsuario((Integer) row[9]);
                     
                     u.DireccionesJPA = new ArrayList<>();
                     
@@ -252,22 +261,22 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
                 }
 
                 DireccionJPA d = new DireccionJPA();
-                d.setCalle((String) row[9]);
-                d.setNumeroInterior((String) row[10]);
-                d.setNumeroExterior((String) row[11]);
+                d.setCalle((String) row[10]);
+                d.setNumeroInterior((String) row[11]);
+                d.setNumeroExterior((String) row[12]);
 
                 ColoniaJPA c = new ColoniaJPA();
-                c.setNombreColonia((String) row[12]);
-                c.setCodigoPostal((String) row[13]);
+                c.setNombreColonia((String) row[13]);
+                c.setCodigoPostal((String) row[14]);
 
                 MunicipioJPA m = new MunicipioJPA();
-                m.setNombreMunicipio((String) row[14]);
+                m.setNombreMunicipio((String) row[15]);
 
                 EstadoJPA e = new EstadoJPA();
-                e.setNombreEstado((String) row[15]);
+                e.setNombreEstado((String) row[16]);
 
                 PaisJPA p = new PaisJPA();
-                p.setNombrePais((String) row[16]);
+                p.setNombrePais((String) row[17]);
 
                 e.PaisJPA = p;
                 m.EstadoJPA = e;
@@ -296,12 +305,17 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
         Result result = new Result();
         
         try{
-            UsuarioJPA usuario = entityManager.find(UsuarioJPA.class, idUsuario);
+//            UsuarioJPA usuario = entityManager.find(UsuarioJPA.class, idUsuario);
+//            
+//            usuario.setStatusUsuario(status);
+//            
+//            entityManager.merge(usuario);
             
-            usuario.setStatusUsuario(status);
-            
-            entityManager.merge(usuario);
-            
+            entityManager.createQuery("UPDATE UsuarioJPA SET StatusUsuario = :status WHERE IdUsuario = :id")
+                    .setParameter("status", status)
+                    .setParameter("id", idUsuario)
+                    .executeUpdate();
+
             result.correct = true;
             
         }catch(Exception ex){

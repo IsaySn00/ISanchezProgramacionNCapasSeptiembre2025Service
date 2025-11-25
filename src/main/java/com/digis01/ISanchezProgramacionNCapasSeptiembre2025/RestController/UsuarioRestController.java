@@ -283,7 +283,7 @@ public class UsuarioRestController {
 
                 bw.write(fecha + archivo.getOriginalFilename());
                 bw.write("|");
-                bw.write(tkn);
+                bw.write(listaError.size() > 0 ? "null" : tkn);
                 bw.write("|");
                 bw.write(listaError.size() > 0 ? "Error" : "Valido");
                 bw.write("|");
