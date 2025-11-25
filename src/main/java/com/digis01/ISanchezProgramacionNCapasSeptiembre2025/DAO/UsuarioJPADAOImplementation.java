@@ -1,5 +1,6 @@
 package com.digis01.ISanchezProgramacionNCapasSeptiembre2025.DAO;
 
+import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.DTO.UsuarioUpdateDTO;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.ColoniaJPA;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.DireccionJPA;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.EstadoJPA;
@@ -7,6 +8,7 @@ import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.MunicipioJPA;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.PaisJPA;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.UsuarioJPA;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.Result;
+import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.RolJPA;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import java.util.ArrayList;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Repository;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.transaction.annotation.Transactional;
@@ -89,16 +92,29 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
 
     @Override
     @Transactional
-    public Result UpdateUsuario(UsuarioJPA usuario) {
+    public Result UpdateUsuario(UsuarioUpdateDTO usuario) {
         Result result = new Result();
 
         try {
-            UsuarioJPA usuarioFind = entityManager.find(UsuarioJPA.class, usuario.getIdUsuario());
-
-            usuario.setPasswordUser(usuarioFind.getPasswordUser());
-            usuario.setFotoUsuario(usuarioFind.getFotoUsuario());
-            usuario.DireccionesJPA = usuarioFind.DireccionesJPA;
-
+//            UsuarioJPA usuarioFind = entityManager.find(UsuarioJPA.class, usuario.getIdUsuario());
+//
+//            usuarioFind.setNombreUsuario(usuario.getNombreUsuario());
+//            usuarioFind.setApellidoPatUsuario(usuario.getApellidoPatUsuario());
+//            usuarioFind.setApellidoMatUsuario(usuario.getApellidoMatUsuario());
+//            usuarioFind.setUserName(usuario.getUserName());
+//            usuarioFind.setEmailUsuario(usuario.getEmailUsuario());
+//            usuarioFind.setFechaNacimiento(usuario.getFechaNacimiento());
+//            usuarioFind.setSexoUsuario(usuario.getSexoUsuario());
+//            usuarioFind.setStatusUsuario(1);
+//            usuarioFind.setTelefonoUsuario(usuario.getTelefonoUsuario());
+//            usuarioFind.setCelularUsuario(usuario.getCelularUsuario());
+//            usuarioFind.setCurpUsuario(usuario.getCurpUsuario());
+//            usuarioFind.setFechaModificacion(new Date());
+//            
+//            RolJPA rol = entityManager.getReference(RolJPA.class, usuario.RolJPA.getIdRol());
+//            
+//            usuarioFind.RolJPA.setIdRol(rol.getIdRol());
+            
             entityManager.merge(usuario);
 
             result.correct = true;
@@ -108,7 +124,7 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
             result.errorMessage = ex.getLocalizedMessage();
             result.ex = ex;
         }
-        return result;
+            return result;
     }
 
     @Override
@@ -173,7 +189,7 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
         return result;
 
     }
-    
+
     @Override
     public Result GetAllDinamico(UsuarioJPA usuario) {
         Result result = new Result();
@@ -202,11 +218,11 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
             if (usuario.getApellidoMatUsuario() != null && !usuario.getApellidoMatUsuario().isEmpty()) {
                 jpql.append(" AND LOWER(u.ApellidoMatUsuario) LIKE LOWER(:apellidoMat) ");
             }
-            
-            if(usuario.getStatusUsuario() == 0 || usuario.getStatusUsuario() == 1){
+
+            if (usuario.getStatusUsuario() == 0 || usuario.getStatusUsuario() == 1) {
                 jpql.append(" AND u.StatusUsuario = :status");
             }
-            
+
             if (usuario.RolJPA.getIdRol() != 0) {
                 jpql.append(" AND r.IdRol = :idRol ");
             }
@@ -224,7 +240,7 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
             if (usuario.getApellidoMatUsuario() != null && !usuario.getApellidoMatUsuario().isEmpty()) {
                 query.setParameter("apellidoMat", "%" + usuario.getApellidoMatUsuario() + "%");
             }
-            if(usuario.getStatusUsuario() == 0 || usuario.getStatusUsuario() == 1){
+            if (usuario.getStatusUsuario() == 0 || usuario.getStatusUsuario() == 1) {
                 query.setParameter("status", usuario.getStatusUsuario());
             }
             if (usuario.RolJPA.getIdRol() != 0) {
@@ -254,9 +270,9 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
                     u.setTelefonoUsuario((String) row[7]);
                     u.setCelularUsuario((String) row[8]);
                     u.setStatusUsuario((Integer) row[9]);
-                    
+
                     u.DireccionesJPA = new ArrayList<>();
-                    
+
                     mapUsuarios.put(idUsuario, u);
                 }
 
@@ -303,22 +319,22 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
     @Transactional
     public Result BorradoLogicoUsuario(int idUsuario, int status) {
         Result result = new Result();
-        
-        try{
+
+        try {
 //            UsuarioJPA usuario = entityManager.find(UsuarioJPA.class, idUsuario);
 //            
 //            usuario.setStatusUsuario(status);
 //            
 //            entityManager.merge(usuario);
-            
+
             entityManager.createQuery("UPDATE UsuarioJPA SET StatusUsuario = :status WHERE IdUsuario = :id")
                     .setParameter("status", status)
                     .setParameter("id", idUsuario)
                     .executeUpdate();
 
             result.correct = true;
-            
-        }catch(Exception ex){
+
+        } catch (Exception ex) {
             result.correct = false;
             result.errorMessage = ex.getLocalizedMessage();
             result.ex = ex;

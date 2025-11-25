@@ -1,11 +1,13 @@
 package com.digis01.ISanchezProgramacionNCapasSeptiembre2025.RestController;
 
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.DAO.UsuarioJPADAOImplementation;
+import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.DTO.UsuarioUpdateDTO;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.ErrorCarga;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.Result;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.RolJPA;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.UsuarioJPA;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.Valid;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -55,6 +57,8 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -101,10 +105,31 @@ public class UsuarioRestController {
     }
 
     @PostMapping(value = "/usuario", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity AddUsuario(@RequestPart("usuario") UsuarioJPA usuario,
+    public ResponseEntity AddUsuario(@Valid @RequestPart("usuario") UsuarioJPA usuario, BindingResult bindingResult,
             @RequestPart("imagenFile") MultipartFile imagenFile) {
 
         Result result = new Result();
+
+        if (bindingResult.hasErrors()) {
+
+            List<ErrorCarga> listaError = new ArrayList<>();
+
+            for (FieldError errorCampo : bindingResult.getFieldErrors()) {
+
+                ErrorCarga error = new ErrorCarga();
+
+                error.setCampo(errorCampo.getField());
+                error.setDescripcion(errorCampo.getDefaultMessage());
+
+                listaError.add(error);
+            }
+
+            result.object = listaError;
+            result.status = 422;
+            result.errorMessage = "Datos Invalidos";
+
+            return ResponseEntity.status(result.status).body(result);
+        }
 
         try {
 
@@ -129,9 +154,30 @@ public class UsuarioRestController {
     }
 
     @PutMapping("/updateUsuario")
-    public ResponseEntity UpdateUsuario(@RequestBody UsuarioJPA usuario) {
+    public ResponseEntity UpdateUsuario(@Valid @RequestBody UsuarioUpdateDTO usuario, BindingResult bindingResult) {
         Result result = new Result();
 
+        if (bindingResult.hasErrors()) {
+
+            List<ErrorCarga> listaError = new ArrayList<>();
+
+            for (FieldError errorCampo : bindingResult.getFieldErrors()) {
+
+                ErrorCarga error = new ErrorCarga();
+
+                error.setCampo(errorCampo.getField());
+                error.setDescripcion(errorCampo.getDefaultMessage());
+
+                listaError.add(error);
+            }
+
+            result.object = listaError;
+            result.status = 422;
+            result.errorMessage = "Datos Invalidos";
+
+            return ResponseEntity.status(result.status).body(result);
+        }
+        
         try {
             usuarioJPADAOImplemenation.UpdateUsuario(usuario);
 
@@ -213,24 +259,24 @@ public class UsuarioRestController {
         }
         return ResponseEntity.status(result.status).body(result);
     }
-    
+
     @PatchMapping("/usuario/{idUsuario}/bajaLogica")
-    public ResponseEntity BajaLogica(@PathVariable("idUsuario") int idUsuario, @RequestParam("status") int status){
+    public ResponseEntity BajaLogica(@PathVariable("idUsuario") int idUsuario, @RequestParam("status") int status) {
         Result result = new Result();
-        
-        try{
+
+        try {
             usuarioJPADAOImplemenation.BorradoLogicoUsuario(idUsuario, status);
             result.correct = true;
             result.status = 202;
             result.object = "Se he hecho la baja del usuario";
-            
-        }catch(Exception ex){
+
+        } catch (Exception ex) {
             result.correct = false;
             result.errorMessage = ex.getLocalizedMessage();
             result.ex = ex;
             result.status = 500;
         }
-        
+
         return ResponseEntity.status(result.status).body(result);
     }
 
@@ -363,7 +409,7 @@ public class UsuarioRestController {
                 } catch (IOException e) {
                     System.out.println("Error al escribir en el archivo: " + e.getMessage());
                 }
-                
+
                 result.correct = false;
                 result.status = 408;
                 result.errorMessage = "Tiempo Expirado";
