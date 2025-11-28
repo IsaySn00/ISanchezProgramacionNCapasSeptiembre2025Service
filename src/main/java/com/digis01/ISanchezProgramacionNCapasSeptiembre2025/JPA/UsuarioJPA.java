@@ -78,7 +78,7 @@ public class UsuarioJPA {
     @NotBlank(message = "El nombre de usuario es obligatorio")
     @Pattern(regexp = "^[a-zA-Z][a-zA-Z0-9_]+$", message = "El nombre de usuario no es valido")
     @Column(name = "username", nullable = false, unique = true)
-    private String UserName;
+    private String userName;
 
     @NotNull(message = "El correo no puede ser nulo")
     @NotBlank(message = "El correo es obligatorio")
@@ -131,7 +131,7 @@ public class UsuarioJPA {
         this.StatusUsuario = statusUsuario;
         this.FechaModificacion = fechaModificacion;
         this.FotoUsuario = fotoUsuario;
-        this.UserName = userName;
+        this.userName = userName;
         this.EmailUsuario = emailUsuario;
         this.SexoUsuario = sexoUsuario;
         this.TelefonoUsuario = telefonoUsuario;
@@ -212,11 +212,11 @@ public class UsuarioJPA {
     }
 
     public void setUserName(String UserName) {
-        this.UserName = UserName;
+        this.userName = UserName;
     }
 
     public String getUserName() {
-        return UserName;
+        return userName;
     }
 
     public void setEmailUsuario(String EmailUsuario) {

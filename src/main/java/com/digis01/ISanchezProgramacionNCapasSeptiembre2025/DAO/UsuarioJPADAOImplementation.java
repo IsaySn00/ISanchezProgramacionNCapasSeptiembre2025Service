@@ -96,25 +96,7 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
         Result result = new Result();
 
         try {
-//            UsuarioJPA usuarioFind = entityManager.find(UsuarioJPA.class, usuario.getIdUsuario());
-//
-//            usuarioFind.setNombreUsuario(usuario.getNombreUsuario());
-//            usuarioFind.setApellidoPatUsuario(usuario.getApellidoPatUsuario());
-//            usuarioFind.setApellidoMatUsuario(usuario.getApellidoMatUsuario());
-//            usuarioFind.setUserName(usuario.getUserName());
-//            usuarioFind.setEmailUsuario(usuario.getEmailUsuario());
-//            usuarioFind.setFechaNacimiento(usuario.getFechaNacimiento());
-//            usuarioFind.setSexoUsuario(usuario.getSexoUsuario());
-//            usuarioFind.setStatusUsuario(1);
-//            usuarioFind.setTelefonoUsuario(usuario.getTelefonoUsuario());
-//            usuarioFind.setCelularUsuario(usuario.getCelularUsuario());
-//            usuarioFind.setCurpUsuario(usuario.getCurpUsuario());
-//            usuarioFind.setFechaModificacion(new Date());
-//            
-//            RolJPA rol = entityManager.getReference(RolJPA.class, usuario.RolJPA.getIdRol());
-//            
-//            usuarioFind.RolJPA.setIdRol(rol.getIdRol());
-            
+
             entityManager.merge(usuario);
 
             result.correct = true;
