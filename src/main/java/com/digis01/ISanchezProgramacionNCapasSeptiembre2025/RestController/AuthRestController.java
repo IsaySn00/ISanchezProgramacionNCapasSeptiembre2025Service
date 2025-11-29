@@ -1,7 +1,10 @@
 package com.digis01.ISanchezProgramacionNCapasSeptiembre2025.RestController;
+import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.DAO.UsuarioJPADAOImplementation;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.Result;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.UsuarioJPA;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JWT.JwtService;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,6 +30,9 @@ public class AuthRestController {
     @Autowired
     private JwtService jwtService;
     
+    @Autowired
+    private UsuarioJPADAOImplementation usuarioJPADAOImplementation;
+    
     @PostMapping("/login")
     public ResponseEntity Login(@RequestBody UsuarioJPA usuarioJPA){
         Result result = new Result();
@@ -43,9 +49,16 @@ public class AuthRestController {
             
             String tkn = jwtService.getToken(userDetails);
             
+            UsuarioJPA usuario = (UsuarioJPA) usuarioJPADAOImplementation.GetUsuarioByUserName(usuarioJPA.getUserName()).object;
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", tkn);
+            response.put("rol", usuario.RolJPA.getNombreRol());
+            response.put("idUsuario", usuario.getIdUsuario());
+            
             result.correct = true;
             result.status = 200;
-            result.object = tkn;
+            result.object = response;
             
         }catch(Exception ex){
             result.correct = false;

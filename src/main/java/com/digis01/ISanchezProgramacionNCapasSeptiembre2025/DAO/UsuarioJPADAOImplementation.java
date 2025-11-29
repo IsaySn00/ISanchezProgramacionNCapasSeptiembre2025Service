@@ -324,4 +324,27 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
         return result;
     }
 
+    @Override
+    public Result GetUsuarioByUserName(String username) {
+        Result result = new Result();
+        
+        try{
+            
+            TypedQuery<UsuarioJPA> queryUsuario = entityManager.createQuery("FROM UsuarioJPA WHERE userName = :UserName", UsuarioJPA.class)
+            .setParameter("UserName", username);
+            
+            UsuarioJPA usuario = queryUsuario.getSingleResult();
+            
+            result.correct = true;
+            result.object = usuario;
+            
+        }catch(Exception ex){
+            result.correct = false;
+            result.errorMessage = ex.getLocalizedMessage();
+            result.ex = ex;
+            
+        }
+        return result;
+    }
+
 }
