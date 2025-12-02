@@ -71,7 +71,7 @@ public class UsuarioJPA {
     private Date FechaModificacion;
 
     @Lob
-    @Column(name = "foto_usuario", length = 255)
+    @Column (name = "foto_usuario", length = 255)
     private byte[] FotoUsuario;
 
     @NotNull(message = "El nombre de usuario no puede ser nulo")

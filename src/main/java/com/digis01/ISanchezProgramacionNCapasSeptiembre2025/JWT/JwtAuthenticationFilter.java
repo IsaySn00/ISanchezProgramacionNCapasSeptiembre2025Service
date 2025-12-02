@@ -16,14 +16,16 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter{
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
-    
-    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsService userDetailsService){
+    private final TokenUsageService tokenUsageService;
+
+    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsService userDetailsService, TokenUsageService tokenUsageService) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.tokenUsageService = tokenUsageService;
     }
 
     @Override
@@ -33,7 +35,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
         final String token = getTokenFromRequest(request);
 
         if (token == null) {
+
             filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (!tokenUsageService.isAllowed(token)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType("application/json");
+            response.getWriter().write("Este token ha excedido el número de peticiones");
             return;
         }
 

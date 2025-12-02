@@ -178,7 +178,7 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
 
         try {
             StringBuilder jpql = new StringBuilder();
-            jpql.append("SELECT u.IdUsuario, u.NombreUsuario, u.ApellidoPatUsuario, u.ApellidoMatUsuario, ");
+            jpql.append("SELECT u.IdUsuario, u.nombreUsuario, u.ApellidoPatUsuario, u.ApellidoMatUsuario, ");
             jpql.append("u.UserName, u.EmailUsuario, u.FotoUsuario, u.TelefonoUsuario, u.CelularUsuario, u.StatusUsuario, ");
             jpql.append("d.Calle, d.NumeroInterior, d.NumeroExterior, ");
             jpql.append("c.NombreColonia, c.CodigoPostal, m.NombreMunicipio, e.NombreEstado, p.NombrePais ");
@@ -192,7 +192,7 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
             jpql.append("WHERE 1 = 1 ");
 
             if (usuario.getNombreUsuario() != null && !usuario.getNombreUsuario().isEmpty()) {
-                jpql.append(" AND LOWER(u.NombreUsuario) LIKE LOWER(:nombre) ");
+                jpql.append(" AND LOWER(u.nombreUsuario) LIKE LOWER(:nombre) ");
             }
             if (usuario.getApellidoPatUsuario() != null && !usuario.getApellidoPatUsuario().isEmpty()) {
                 jpql.append(" AND LOWER(u.ApellidoPatUsuario) LIKE LOWER(:apellidoPat) ");
