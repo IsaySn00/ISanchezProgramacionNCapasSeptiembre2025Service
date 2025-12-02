@@ -19,7 +19,12 @@ public class JwtService {
     private static final String SECRET_KEY = "CjntvvFoDwVAHfVJvMM0BrVtwSGrLmwOfF0HzCjc8Yt";
     
      public String getToken(UserDetails userDetails) {
-        return getToken(new HashMap<>(), userDetails);
+         
+         String role = userDetails.getAuthorities().iterator().next().getAuthority();
+         Map<String, Object> claims = new HashMap<>();
+         claims.put("role", role);
+         
+        return getToken(claims, userDetails);
     }
 
     public String getEmailFromToken(String token) {

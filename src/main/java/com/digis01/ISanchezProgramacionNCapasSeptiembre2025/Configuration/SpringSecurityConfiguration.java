@@ -2,9 +2,12 @@ package com.digis01.ISanchezProgramacionNCapasSeptiembre2025.Configuration;
 
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JWT.JwtAuthenticationFilter;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.Service.UserDetailsJPAService;
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -12,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 public class SpringSecurityConfiguration {
@@ -28,10 +32,27 @@ public class SpringSecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(request -> {
+                   CorsConfiguration config = new CorsConfiguration(); 
+                   config.setAllowedOriginPatterns(List.of("http://localhost:8081"));
+                   config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
+                   config.setAllowedHeaders(List.of("*"));
+                   config.setAllowCredentials(true);
+                   return config;
+                }))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(configurer -> configurer
-                .requestMatchers("api/auth/login", "/login").permitAll()
-                .requestMatchers("api/usuario/**").hasAnyRole("admin", "usuario", "invitado")
+                .requestMatchers("/api/auth/login").permitAll()
+                .requestMatchers(
+                        "/api/rol/roles",
+                        "/api/pais/paises/**",
+                        "/api/municipio/municipio/**",
+                        "/api/estado/estados/**",
+                        "/api/colonia/colonias/**"
+                        ).hasAnyRole("admin", "usuario", "invitado")
+                .requestMatchers(HttpMethod.POST ,"/api/usuarios/usuario").hasAnyRole("admin", "usuario", "invitado")
+                .requestMatchers(HttpMethod.GET, "/api/usuarios/usuario").hasAnyRole("admin")
+                .requestMatchers("/api/usuario/**").hasAnyRole("admin", "usuario", "invitado")
                 .anyRequest().authenticated()
                 )
                 .userDetailsService(userDetailsJPAService)
@@ -39,6 +60,8 @@ public class SpringSecurityConfiguration {
 
         return http.build();
     }
+    
+    
     
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
