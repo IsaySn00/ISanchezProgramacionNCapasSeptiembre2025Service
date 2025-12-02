@@ -48,7 +48,8 @@ public class SpringSecurityConfiguration {
                         "/api/pais/paises/**",
                         "/api/municipio/municipio/**",
                         "/api/estado/estados/**",
-                        "/api/colonia/colonias/**"
+                        "/api/colonia/colonias/**",
+                        "/api/auth/logout"
                         ).hasAnyRole("admin", "usuario", "invitado")
                 .requestMatchers(HttpMethod.POST ,"/api/usuarios/usuario").hasAnyRole("admin", "usuario", "invitado")
                 .requestMatchers(HttpMethod.GET, "/api/usuarios/usuario").hasAnyRole("admin")
