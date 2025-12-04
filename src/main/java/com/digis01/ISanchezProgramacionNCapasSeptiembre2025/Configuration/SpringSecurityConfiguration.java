@@ -45,18 +45,25 @@ public class SpringSecurityConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(configurer -> configurer
                 .requestMatchers("/api/auth/login").permitAll()
-//                .requestMatchers(
-//                        "/api/rol/roles",
-//                        "/api/pais/paises/**",
-//                        "/api/municipio/municipio/**",
-//                        "/api/estado/estados/**",
-//                        "/api/colonia/colonias/**",
-//                        "/api/auth/logout"
-//                ).hasAnyRole("admin", "usuario", "invitado")
-//                .requestMatchers(HttpMethod.POST, "/api/usuarios/usuario").hasAnyRole("admin", "usuario", "invitado")
-//                .requestMatchers(HttpMethod.GET, "/api/usuarios/usuario").hasRole("admin")
-//                .requestMatchers(HttpMethod.DELETE, "/api/usuarios/usuario/**").hasRole("admin")
-//                .requestMatchers("/api/usuario/**").hasAnyRole("admin", "usuario", "invitado")
+                .requestMatchers(
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                        "/v3/api-docs.yaml",
+                        "/v3/api-docs.json"
+                ).permitAll()
+                //                .requestMatchers(
+                //                        "/api/rol/roles",
+                //                        "/api/pais/paises/**",
+                //                        "/api/municipio/municipio/**",
+                //                        "/api/estado/estados/**",
+                //                        "/api/colonia/colonias/**",
+                //                        "/api/auth/logout"
+                //                ).hasAnyRole("admin", "usuario", "invitado")
+                //                .requestMatchers(HttpMethod.POST, "/api/usuarios/usuario").hasAnyRole("admin", "usuario", "invitado")
+                //                .requestMatchers(HttpMethod.GET, "/api/usuarios/usuario").hasRole("admin")
+                //                .requestMatchers(HttpMethod.DELETE, "/api/usuarios/usuario/**").hasRole("admin")
+                //                .requestMatchers("/api/usuario/**").hasAnyRole("admin", "usuario", "invitado")
                 .anyRequest().authenticated()
                 )
                 .userDetailsService(userDetailsJPAService)
