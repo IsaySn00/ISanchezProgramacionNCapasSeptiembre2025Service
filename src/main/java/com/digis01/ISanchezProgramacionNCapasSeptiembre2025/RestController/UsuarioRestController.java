@@ -57,6 +57,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
@@ -67,6 +68,7 @@ public class UsuarioRestController {
     @Autowired
     private UsuarioJPADAOImplementation usuarioJPADAOImplemenation;
 
+    @PreAuthorize("hasAuthority('ROLE_admin')")
     @GetMapping("/usuario")
     public ResponseEntity GetUsuarios() {
         Result result = new Result();
@@ -85,6 +87,7 @@ public class UsuarioRestController {
         return ResponseEntity.status(result.status).body(result);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_admin') or hasAuthority('ROLE_usuario')")
     @GetMapping("/usuario/{idUsuario}")
     public ResponseEntity GetUsuarioById(@PathVariable("idUsuario") int idUsuario) {
         Result result = new Result();
@@ -104,6 +107,7 @@ public class UsuarioRestController {
         return ResponseEntity.status(result.status).body(result);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_admin')")
     @PostMapping(value = "/usuario", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity AddUsuario(@Valid @RequestPart("usuario") UsuarioJPA usuario, BindingResult bindingResult,
             @RequestPart("imagenFile") MultipartFile imagenFile) {
@@ -153,6 +157,7 @@ public class UsuarioRestController {
         return ResponseEntity.status(result.status).body(result);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_admin') or hasAuthority('ROLE_usuario')")
     @PutMapping("/updateUsuario")
     public ResponseEntity UpdateUsuario(@Valid @RequestBody UsuarioUpdateDTO usuario, BindingResult bindingResult) {
         Result result = new Result();
@@ -177,7 +182,7 @@ public class UsuarioRestController {
 
             return ResponseEntity.status(result.status).body(result);
         }
-        
+
         try {
             usuarioJPADAOImplemenation.UpdateUsuario(usuario);
 
@@ -195,6 +200,7 @@ public class UsuarioRestController {
         return ResponseEntity.status(result.status).body(result);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_admin')")
     @DeleteMapping("/deleteUsuario/{idUsuario}")
     public ResponseEntity DeleteUsuario(@PathVariable("idUsuario") int id) {
         Result result = new Result();
@@ -216,6 +222,7 @@ public class UsuarioRestController {
         return ResponseEntity.status(result.status).body(result);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_admin') or hasAuthority('ROLE_usuario')")
     @PatchMapping("/updateImgUsuario")
     public ResponseEntity UpdateImgUsuario(@RequestPart("usuario") UsuarioJPA usuario,
             @RequestPart("imgFile") MultipartFile imgFile) {
@@ -242,6 +249,7 @@ public class UsuarioRestController {
         return ResponseEntity.status(result.status).body(result);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_admin')")
     @PostMapping("/GetUsuariosDinamico")
     public ResponseEntity GetDinamico(@RequestBody UsuarioJPA usuario) {
         Result result = new Result();
@@ -260,6 +268,7 @@ public class UsuarioRestController {
         return ResponseEntity.status(result.status).body(result);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_admin')")
     @PatchMapping("/usuario/{idUsuario}/bajaLogica")
     public ResponseEntity BajaLogica(@PathVariable("idUsuario") int idUsuario, @RequestParam("status") int status) {
         Result result = new Result();
@@ -280,6 +289,7 @@ public class UsuarioRestController {
         return ResponseEntity.status(result.status).body(result);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_admin')")
     @PostMapping(value = "/cargaMasiva", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity CargaMasiva(@RequestPart("archivo") MultipartFile archivo) {
 
@@ -365,6 +375,7 @@ public class UsuarioRestController {
         return ResponseEntity.status(result.status).body(result);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_admin')")
     @GetMapping("/cargaMasiva")
     public ResponseEntity CargaMasiva(@RequestParam("tkn") String tkn) {
 

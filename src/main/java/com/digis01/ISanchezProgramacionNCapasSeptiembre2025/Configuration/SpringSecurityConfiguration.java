@@ -9,6 +9,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
+@EnableMethodSecurity(prePostEnabled = true)
 public class SpringSecurityConfiguration {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -33,27 +35,28 @@ public class SpringSecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(request -> {
-                   CorsConfiguration config = new CorsConfiguration(); 
-                   config.setAllowedOriginPatterns(List.of("http://localhost:8081"));
-                   config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
-                   config.setAllowedHeaders(List.of("*"));
-                   config.setAllowCredentials(true);
-                   return config;
-                }))
+            CorsConfiguration config = new CorsConfiguration();
+            config.setAllowedOriginPatterns(List.of("http://localhost:8081"));
+            config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
+            config.setAllowedHeaders(List.of("*"));
+            config.setAllowCredentials(true);
+            return config;
+        }))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(configurer -> configurer
                 .requestMatchers("/api/auth/login").permitAll()
-                .requestMatchers(
-                        "/api/rol/roles",
-                        "/api/pais/paises/**",
-                        "/api/municipio/municipio/**",
-                        "/api/estado/estados/**",
-                        "/api/colonia/colonias/**",
-                        "/api/auth/logout"
-                        ).hasAnyRole("admin", "usuario", "invitado")
-                .requestMatchers(HttpMethod.POST ,"/api/usuarios/usuario").hasAnyRole("admin", "usuario", "invitado")
-                .requestMatchers(HttpMethod.GET, "/api/usuarios/usuario").hasAnyRole("admin")
-                .requestMatchers("/api/usuario/**").hasAnyRole("admin", "usuario", "invitado")
+//                .requestMatchers(
+//                        "/api/rol/roles",
+//                        "/api/pais/paises/**",
+//                        "/api/municipio/municipio/**",
+//                        "/api/estado/estados/**",
+//                        "/api/colonia/colonias/**",
+//                        "/api/auth/logout"
+//                ).hasAnyRole("admin", "usuario", "invitado")
+//                .requestMatchers(HttpMethod.POST, "/api/usuarios/usuario").hasAnyRole("admin", "usuario", "invitado")
+//                .requestMatchers(HttpMethod.GET, "/api/usuarios/usuario").hasRole("admin")
+//                .requestMatchers(HttpMethod.DELETE, "/api/usuarios/usuario/**").hasRole("admin")
+//                .requestMatchers("/api/usuario/**").hasAnyRole("admin", "usuario", "invitado")
                 .anyRequest().authenticated()
                 )
                 .userDetailsService(userDetailsJPAService)
@@ -61,9 +64,7 @@ public class SpringSecurityConfiguration {
 
         return http.build();
     }
-    
-    
-    
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
