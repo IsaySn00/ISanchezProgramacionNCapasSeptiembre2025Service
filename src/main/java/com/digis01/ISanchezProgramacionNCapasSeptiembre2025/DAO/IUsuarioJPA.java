@@ -18,4 +18,6 @@ public interface IUsuarioJPA {
     Result GetAllDinamico(UsuarioJPA usuario);
     Result BorradoLogicoUsuario(int idUsuario, int status);
     Result GetUsuarioByUserName(String username);
+    Result GetUsuarioByEmail(String email);
+    Result UpdateStatusVerificacion(String email, int verified);
 }

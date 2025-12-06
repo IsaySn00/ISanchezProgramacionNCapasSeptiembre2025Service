@@ -79,6 +79,9 @@ public class UsuarioUpdateDTO {
     @Size(max = 1, message = "El sexo no puede tener más de un carácter")
     @Column(name = "sexo", length = 1, nullable = false)
     private String SexoUsuario;
+    
+    @Column(name="isverified")
+    private int IsVerified;
 
     @NotNull(message = "El teléfono no puede ser nulo")
     @NotBlank(message = "El teléfono no puede estar vacio")
@@ -223,4 +226,14 @@ public class UsuarioUpdateDTO {
     public String getCurpUsuario() {
         return CurpUsuario;
     }
+
+    public int getIsVerified() {
+        return IsVerified;
+    }
+
+    public void setIsVerified(int IsVerified) {
+        this.IsVerified = IsVerified;
+    }
+    
+    
 }

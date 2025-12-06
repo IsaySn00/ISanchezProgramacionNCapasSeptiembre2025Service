@@ -106,6 +106,9 @@ public class UsuarioJPA {
     @Size(max = 50, message = "El CURP ha sobrepasado el número de caracteres")
     @Column(name = "curp", length = 50)
     private String CurpUsuario;
+    
+    @Column(name="isverified")
+    private int IsVerified;
 
     @ManyToOne()
     @JoinColumn(name = "idrol", nullable = false)
@@ -258,4 +261,14 @@ public class UsuarioJPA {
     public String getCurpUsuario() {
         return CurpUsuario;
     }
+
+    public int getIsVerified() {
+        return IsVerified;
+    }
+
+    public void setIsVerified(int IsVerified) {
+        this.IsVerified = IsVerified;
+    }
+    
+    
 }

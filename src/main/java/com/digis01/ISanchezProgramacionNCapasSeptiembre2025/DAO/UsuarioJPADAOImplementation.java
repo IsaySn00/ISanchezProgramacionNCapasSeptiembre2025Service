@@ -106,7 +106,7 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
             result.errorMessage = ex.getLocalizedMessage();
             result.ex = ex;
         }
-            return result;
+        return result;
     }
 
     @Override
@@ -327,22 +327,66 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
     @Override
     public Result GetUsuarioByUserName(String username) {
         Result result = new Result();
-        
-        try{
-            
+
+        try {
+
             TypedQuery<UsuarioJPA> queryUsuario = entityManager.createQuery("FROM UsuarioJPA WHERE userName = :UserName", UsuarioJPA.class)
-            .setParameter("UserName", username);
-            
+                    .setParameter("UserName", username);
+
             UsuarioJPA usuario = queryUsuario.getSingleResult();
-            
+
             result.correct = true;
             result.object = usuario;
-            
-        }catch(Exception ex){
+
+        } catch (Exception ex) {
             result.correct = false;
             result.errorMessage = ex.getLocalizedMessage();
             result.ex = ex;
-            
+
+        }
+        return result;
+    }
+
+    @Override
+    public Result GetUsuarioByEmail(String email) {
+        Result result = new Result();
+
+        try {
+
+            TypedQuery<UsuarioJPA> queryUsuario = entityManager.createQuery("FROM UsuarioJPA WHERE EmailUsuario = :email", UsuarioJPA.class)
+                    .setParameter("email", email);
+
+            UsuarioJPA usuario = queryUsuario.getSingleResult();
+
+            result.correct = true;
+            result.object = usuario;
+
+        } catch (Exception ex) {
+            result.correct = false;
+            result.errorMessage = ex.getLocalizedMessage();
+            result.ex = ex;
+
+        }
+        return result;
+    }
+
+    @Override
+    public Result UpdateStatusVerificacion(String email, int verified) {
+        Result result = new Result();
+
+        try {
+            String query = "UPDATE UsuarioJPA SET IsVerified = :verified WHERE EmailUsuario = :email";
+
+            entityManager.createQuery(query)
+                    .setParameter("verified", verified)
+                    .setParameter("email", email)
+                    .executeUpdate();
+
+            result.correct = true;
+        } catch (Exception ex) {
+            result.correct = false;
+            result.errorMessage = ex.getLocalizedMessage();
+            result.ex = ex;
         }
         return result;
     }

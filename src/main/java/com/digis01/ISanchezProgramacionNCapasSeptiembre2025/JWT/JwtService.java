@@ -50,6 +50,19 @@ public class JwtService {
                 .signWith(getKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+    
+    public String generateVerificationToken(String email){
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "verification");
+        
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + (1000 * 60 *30)))
+                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
 
     private Key getKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
