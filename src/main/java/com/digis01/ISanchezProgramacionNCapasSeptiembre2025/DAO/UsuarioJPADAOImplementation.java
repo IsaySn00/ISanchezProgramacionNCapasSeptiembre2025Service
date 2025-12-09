@@ -21,6 +21,7 @@ import jakarta.persistence.Persistence;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
@@ -28,6 +29,13 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
 
     @Autowired
     EntityManager entityManager;
+    
+    private final PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    public UsuarioJPADAOImplementation(PasswordEncoder passwordEncoder){
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     public Result GetAll() {
@@ -56,6 +64,11 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
         Result result = new Result();
 
         try {
+            
+            String pswrd = usuario.getPasswordUser();
+            
+            usuario.setPasswordUser(passwordEncoder.encode(pswrd));
+            
             entityManager.persist(usuario);
 
             for (DireccionJPA direccion : usuario.DireccionesJPA) {
@@ -371,6 +384,7 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
     }
 
     @Override
+    @Transactional
     public Result UpdateStatusVerificacion(String email, int verified) {
         Result result = new Result();
 

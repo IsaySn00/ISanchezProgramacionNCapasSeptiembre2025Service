@@ -5,7 +5,6 @@ import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.Service.UserDetailsJ
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -45,6 +44,8 @@ public class SpringSecurityConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(configurer -> configurer
                 .requestMatchers("/api/auth/login").permitAll()
+                .requestMatchers("/api/auth/verificar").permitAll()
+                .requestMatchers("/api/auth/reenviar").permitAll()
                 .requestMatchers(
                         "/swagger-ui.html",
                         "/swagger-ui/**",

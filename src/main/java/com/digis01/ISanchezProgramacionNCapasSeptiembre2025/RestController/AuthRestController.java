@@ -15,6 +15,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -110,6 +111,34 @@ public class AuthRestController {
 
         return ResponseEntity.status(result.status).body(result);
     }
+    
+    @GetMapping("/verificar")
+    public ResponseEntity verificarCuenta(@RequestParam String token){
+        Result result = new Result();
+        
+        try{
+            String email = jwtService.getEmailFromToken(token);
+            String type = jwtService.getClaim(token, claims -> (String) claims.get( "type"));
+            
+            if(!"verification".equals(type)){
+                throw new RuntimeException("Token invalido");
+            }
+            
+            usuarioJPADAOImplementation.UpdateStatusVerificacion(email, 1);
+            
+            result.correct = true;
+            result.status = 200;
+            result.object = "Cuenta verificada exitosamente";
+            
+        }catch(Exception ex){
+            result.status = 400;
+            result.errorMessage = ex.getLocalizedMessage();
+            result.correct = false;
+            result.ex = ex;
+        }
+        
+        return ResponseEntity.status(result.status).body(result);
+    }
 
     @PostMapping("/reenviar")
     public ResponseEntity reenviar(@RequestParam String email) {
@@ -127,7 +156,7 @@ public class AuthRestController {
             }
             
             String tkn = jwtService.generateVerificationToken(email);
-            String link = "http://localhost:8080/api/usuario/verificar?token=" + tkn;
+            String link = "http://localhost:8080/api/auth/verificar?token=" + tkn;
             
             emailService.sendEmail(
                     usuario.getEmailUsuario(), 

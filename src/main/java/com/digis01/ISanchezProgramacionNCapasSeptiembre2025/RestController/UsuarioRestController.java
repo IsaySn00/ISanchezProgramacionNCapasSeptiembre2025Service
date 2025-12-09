@@ -115,7 +115,7 @@ public class UsuarioRestController {
         return ResponseEntity.status(result.status).body(result);
     }
 
-//    @PreAuthorize("hasAuthority('ROLE_admin')")
+    @PreAuthorize("hasAuthority('ROLE_admin')")
     @PostMapping(value = "/usuario", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity AddUsuario(@Valid @RequestPart("usuario") UsuarioJPA usuario, BindingResult bindingResult,
             @RequestPart("imagenFile") MultipartFile imagenFile) {
@@ -153,7 +153,7 @@ public class UsuarioRestController {
             
             String tkn = jwtService.generateVerificationToken(usuario.getEmailUsuario());
             
-            String link = "http://localhost:8080/api/usuario/verificar?token=" + tkn;
+            String link = "http://localhost:8080/api/auth/verificar?token=" + tkn;
             
             emailService.sendEmail(
                     usuario.getEmailUsuario(), 
@@ -172,34 +172,6 @@ public class UsuarioRestController {
             result.correct = false;
         }
 
-        return ResponseEntity.status(result.status).body(result);
-    }
-    
-    @GetMapping("/verificar")
-    public ResponseEntity verificarCuenta(@RequestParam String token){
-        Result result = new Result();
-        
-        try{
-            String email = jwtService.getEmailFromToken(token);
-            String type = jwtService.getClaim(token, claims -> (String) claims.get( "type"));
-            
-            if(!"verification".equals(type)){
-                throw new RuntimeException("Token invalido");
-            }
-            
-            usuarioJPADAOImplemenation.UpdateStatusVerificacion(email, 1);
-            
-            result.correct = true;
-            result.status = 200;
-            result.object = "Cuenta verificada exitosamente";
-            
-        }catch(Exception ex){
-            result.status = 400;
-            result.errorMessage = ex.getLocalizedMessage();
-            result.correct = false;
-            result.ex = ex;
-        }
-        
         return ResponseEntity.status(result.status).body(result);
     }
 
