@@ -85,7 +85,7 @@ public class UsuarioJPA {
     @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
             message = "El correo electrónico ingresado tiene un formato incorrecto")
     @Column(name = "email", nullable = false, unique = true)
-    private String EmailUsuario;
+    private String emailUsuario;
 
     @NotNull(message = "El sexo no puede ser nulo")
     @NotBlank(message = "El sexo no puede estar vacio")
@@ -135,7 +135,7 @@ public class UsuarioJPA {
         this.FechaModificacion = fechaModificacion;
         this.FotoUsuario = fotoUsuario;
         this.userName = userName;
-        this.EmailUsuario = emailUsuario;
+        this.emailUsuario = emailUsuario;
         this.SexoUsuario = sexoUsuario;
         this.TelefonoUsuario = telefonoUsuario;
         this.CelularUsuario = celularUsuario;
@@ -223,11 +223,11 @@ public class UsuarioJPA {
     }
 
     public void setEmailUsuario(String EmailUsuario) {
-        this.EmailUsuario = EmailUsuario;
+        this.emailUsuario = EmailUsuario;
     }
 
     public String getEmailUsuario() {
-        return EmailUsuario;
+        return emailUsuario;
     }
 
     public void setSexoUsuario(String SexoUsuario) {

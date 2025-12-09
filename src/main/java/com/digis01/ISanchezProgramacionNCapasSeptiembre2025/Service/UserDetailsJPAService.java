@@ -18,12 +18,12 @@ public class UserDetailsJPAService implements UserDetailsService{
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UsuarioJPA usuario = iUsuarioRepositoryDAO.findByUserName(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        UsuarioJPA usuario = iUsuarioRepositoryDAO.findByEmailUsuario(email);
 
         boolean statusUsuario = usuario.getStatusUsuario() == 1 ? false : true;
         
-            return User.withUsername(usuario.getUserName())
+            return User.withUsername(usuario.getEmailUsuario())
                 .password(usuario.getPasswordUser())
                 .roles(usuario.RolJPA.getNombreRol())
                 .disabled(statusUsuario)

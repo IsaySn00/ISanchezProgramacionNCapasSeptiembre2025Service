@@ -52,16 +52,17 @@ public class AuthRestController {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            usuarioJPA.getUserName(),
+                            usuarioJPA.getEmailUsuario(),
                             usuarioJPA.getPasswordUser()
                     )
             );
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(usuarioJPA.getUserName());
+            UserDetails userDetails = userDetailsService.loadUserByUsername(usuarioJPA.getEmailUsuario());
+            
 
             String tkn = jwtService.getToken(userDetails);
 
-            UsuarioJPA usuario = (UsuarioJPA) usuarioJPADAOImplementation.GetUsuarioByUserName(usuarioJPA.getUserName()).object;
+            UsuarioJPA usuario = (UsuarioJPA) usuarioJPADAOImplementation.GetUsuarioByEmail(usuarioJPA.getEmailUsuario()).object;
 
             if (usuario.getIsVerified() == 0) {
                 result.correct = false;
@@ -173,7 +174,7 @@ public class AuthRestController {
             result.status = 400;
             result.errorMessage = ex.getLocalizedMessage();
             result.ex = ex;
-        }
+        }   
 
         return ResponseEntity.status(result.status).body(result);
     }

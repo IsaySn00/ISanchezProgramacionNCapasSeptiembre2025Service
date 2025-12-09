@@ -366,7 +366,7 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
 
         try {
 
-            TypedQuery<UsuarioJPA> queryUsuario = entityManager.createQuery("FROM UsuarioJPA WHERE EmailUsuario = :email", UsuarioJPA.class)
+            TypedQuery<UsuarioJPA> queryUsuario = entityManager.createQuery("FROM UsuarioJPA WHERE emailUsuario = :email", UsuarioJPA.class)
                     .setParameter("email", email);
 
             UsuarioJPA usuario = queryUsuario.getSingleResult();
