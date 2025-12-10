@@ -389,7 +389,7 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
         Result result = new Result();
 
         try {
-            String query = "UPDATE UsuarioJPA SET IsVerified = :verified WHERE EmailUsuario = :email";
+            String query = "UPDATE UsuarioJPA SET IsVerified = :verified WHERE emailUsuario = :email";
 
             entityManager.createQuery(query)
                     .setParameter("verified", verified)
