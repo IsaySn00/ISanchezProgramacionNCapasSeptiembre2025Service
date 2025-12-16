@@ -26,7 +26,7 @@ public class UserDetailsJPAService implements UserDetailsService{
             return User.withUsername(usuario.getEmailUsuario())
                 .password(usuario.getPasswordUser())
                 .roles(usuario.RolJPA.getNombreRol())
-                .disabled(statusUsuario)
+                .disabled(false)
                 .build();
     }
 }

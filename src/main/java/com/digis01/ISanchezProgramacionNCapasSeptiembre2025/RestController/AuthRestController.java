@@ -41,7 +41,7 @@ public class AuthRestController {
 
     @Autowired
     private TokenUsageService tokenUsageService;
-    
+
     @Autowired
     private EmailService emailService;
 
@@ -58,7 +58,6 @@ public class AuthRestController {
             );
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(usuarioJPA.getEmailUsuario());
-            
 
             String tkn = jwtService.getToken(userDetails);
 
@@ -112,33 +111,35 @@ public class AuthRestController {
 
         return ResponseEntity.status(result.status).body(result);
     }
-    
+
     @GetMapping("/verificar")
-    public ResponseEntity verificarCuenta(@RequestParam String token){
+    public ResponseEntity verificarCuenta(@RequestParam String token) {
         Result result = new Result();
-        
-        try{
+
+        try {
             String email = jwtService.getEmailFromToken(token);
-            String type = jwtService.getClaim(token, claims -> (String) claims.get( "type"));
-            
-            if(!"verification".equals(type)){
+            String type = jwtService.getClaim(token, claims -> (String) claims.get("type"));
+
+            if (!"verification".equals(type)) {
                 throw new RuntimeException("Token invalido");
             }
-            
+
             usuarioJPADAOImplementation.UpdateStatusVerificacion(email, 1);
-            
+
             result.correct = true;
-            result.status = 200;
-            result.object = "Cuenta verificada exitosamente";
-            
-        }catch(Exception ex){
+            result.status = 302;
+            result.object = "Cuenta verificada de manera exitosa";
+            result.redirectLink = "http://localhost:8081/usuario/verificadoExitoso";
+
+        } catch (Exception ex) {
             result.status = 400;
             result.errorMessage = ex.getLocalizedMessage();
             result.correct = false;
             result.ex = ex;
+            result.redirectLink = "http://localhost:8081/usuario/verificadoError";
         }
-        
-        return ResponseEntity.status(result.status).body(result);
+
+        return ResponseEntity.status(result.status).header("Location", result.redirectLink).body(result);
     }
 
     @PostMapping("/reenviar")
@@ -155,16 +156,12 @@ public class AuthRestController {
                 result.object = "La cuenta ya esta verificada";
                 return ResponseEntity.status(result.status).body(result);
             }
-            
+
             String tkn = jwtService.generateVerificationToken(email);
             String link = "http://localhost:8080/api/auth/verificar?token=" + tkn;
-            
-            emailService.sendEmail(
-                    usuario.getEmailUsuario(), 
-                    "Verifica tu cuenta", 
-                    "Haz clic para verificar tu cuenta " + link
-            );
-            
+
+            emailService.sendEmail(usuario.getEmailUsuario(), link);
+
             result.correct = true;
             result.status = 200;
             result.object = "Correo enviado correctamente";
@@ -174,7 +171,7 @@ public class AuthRestController {
             result.status = 400;
             result.errorMessage = ex.getLocalizedMessage();
             result.ex = ex;
-        }   
+        }
 
         return ResponseEntity.status(result.status).body(result);
     }

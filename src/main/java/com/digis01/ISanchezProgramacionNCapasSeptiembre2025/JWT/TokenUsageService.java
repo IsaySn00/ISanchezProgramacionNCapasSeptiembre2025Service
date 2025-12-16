@@ -12,7 +12,7 @@ public class TokenUsageService {
     
     private final Set<String> blackListTokens = ConcurrentHashMap.newKeySet();
     
-    private static final int MAX_REQUEST = 10;
+    private static final int MAX_REQUEST = 30;
     
     public boolean isAllowed(String token){
         int current = tokenUsageMap.getOrDefault(token, 0);

@@ -155,11 +155,7 @@ public class UsuarioRestController {
             
             String link = "http://localhost:8080/api/auth/verificar?token=" + tkn;
             
-            emailService.sendEmail(
-                    usuario.getEmailUsuario(), 
-                    "Verifica tu cuenta", 
-                    "Haz clic para verificar tu cuenta " + link
-            );
+            emailService.sendEmail(usuario.getEmailUsuario(), link);
 
             result.correct = true;
             result.object = "Se ha creado el usuario exitosamente";
