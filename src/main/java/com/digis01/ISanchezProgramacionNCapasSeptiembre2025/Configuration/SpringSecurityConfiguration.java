@@ -36,7 +36,7 @@ public class SpringSecurityConfiguration {
                 .cors(cors -> cors.configurationSource(request -> {
             CorsConfiguration config = new CorsConfiguration();
             config.setAllowedOriginPatterns(List.of("http://localhost:8081"));
-            config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
+            config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
             config.setAllowedHeaders(List.of("*"));
             config.setAllowCredentials(true);
             return config;
@@ -46,6 +46,8 @@ public class SpringSecurityConfiguration {
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/verificar").permitAll()
                 .requestMatchers("/api/auth/reenviar").permitAll()
+                .requestMatchers("/api/usuarios/enviarCorreoPassword").permitAll()
+                .requestMatchers("/api/usuarios/recuperarPassword").permitAll()
                 .requestMatchers(
                         "/swagger-ui.html",
                         "/swagger-ui/**",

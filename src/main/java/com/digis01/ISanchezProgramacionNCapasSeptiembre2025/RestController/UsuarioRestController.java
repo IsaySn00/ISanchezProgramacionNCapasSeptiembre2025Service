@@ -60,6 +60,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
@@ -69,10 +71,10 @@ public class UsuarioRestController {
 
     @Autowired
     private UsuarioJPADAOImplementation usuarioJPADAOImplemenation;
-    
+
     @Autowired
     private JwtService jwtService;
-    
+
     @Autowired
     private EmailService emailService;
 
@@ -150,12 +152,12 @@ public class UsuarioRestController {
             }
 
             usuarioJPADAOImplemenation.AddUsuario(usuario);
-            
+
             String tkn = jwtService.generateVerificationToken(usuario.getEmailUsuario());
-            
+
             String link = "http://localhost:8080/api/auth/verificar?token=" + tkn;
-            
-            emailService.sendEmail(usuario.getEmailUsuario(), link);
+
+            emailService.sendEmail(usuario.getEmailUsuario(), link, "add");
 
             result.correct = true;
             result.object = "Se ha creado el usuario exitosamente";
@@ -263,6 +265,67 @@ public class UsuarioRestController {
         return ResponseEntity.status(result.status).body(result);
     }
 
+    @PostMapping("/enviarCorreoPassword")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity IsUsuario(@RequestPart("email") String email) {
+        Result result = new Result();
+
+        try {
+            Result resultUsuario = usuarioJPADAOImplemenation.GetUsuarioByEmail(email);
+
+            if (resultUsuario.correct) {
+                
+                String tkn = jwtService.generateRecoveryToken(email);
+                
+                String link = "http://localhost:8081/usuario/recuperacionContrasenia?token=" + tkn;
+                
+                emailService.sendEmail(email, link, "password");
+                
+                result.correct = true;
+                result.object = "Se ha enviado el correo de recuperación de contraseña";
+                result.status = 200;
+            } else {
+                result.correct = false;
+                result.object = "El email no esta vinculado a un usuario";
+                result.status = 401;
+            }
+
+        } catch (Exception ex) {
+            result.correct = false;
+            result.errorMessage = ex.getLocalizedMessage();
+            result.ex = ex;
+            result.status = 500;
+        }
+        return ResponseEntity.status(result.status).body(result);
+    }
+    
+    @PostMapping("/recuperarPassword")
+    @PreAuthorize("hasAuthority('ROLE_invitado')")
+    public ResponseEntity RecuperarPassword(@RequestPart("password") String Password){
+        Result result = new Result();
+        
+        try{
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            
+            String email = auth.getName();
+            
+            usuarioJPADAOImplemenation.UpdatePassword(email, Password);
+            
+            result.correct = true;
+            result.object = "La contraseña se recuperó correctamente.";
+            result.status = 200;
+            
+        }catch(Exception ex){
+            result.correct = false;
+            result.object = "Error al recuperar la contraseña";
+            result.errorMessage = ex.getLocalizedMessage();
+            result.ex = ex;
+            result.status = 500;
+        }
+        
+        return ResponseEntity.status(result.status).body(result);
+    }
+    
     @PreAuthorize("hasAuthority('ROLE_admin')")
     @PostMapping("/GetUsuariosDinamico")
     public ResponseEntity GetDinamico(@RequestBody UsuarioJPA usuario) {

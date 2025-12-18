@@ -17,13 +17,13 @@ import org.springframework.stereotype.Service;
 public class JwtService {
 
     private static final String SECRET_KEY = "CjntvvFoDwVAHfVJvMM0BrVtwSGrLmwOfF0HzCjc8Yt";
-    
-     public String getToken(UserDetails userDetails) {
-         
-         String role = userDetails.getAuthorities().iterator().next().getAuthority();
-         Map<String, Object> claims = new HashMap<>();
-         claims.put("role", role);
-         
+
+    public String getToken(UserDetails userDetails) {
+
+        String role = userDetails.getAuthorities().iterator().next().getAuthority();
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", role);
+
         return getToken(claims, userDetails);
     }
 
@@ -50,18 +50,36 @@ public class JwtService {
                 .signWith(getKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
-    
-    public String generateVerificationToken(String email){
+
+    public String generateVerificationToken(String email) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "verification");
-        
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + (1000 * 60 *30)))
+                .setExpiration(new Date(System.currentTimeMillis() + (1000 * 60 * 30)))
                 .signWith(getKey(), SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public String generateRecoveryToken(String email) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", "ROLE_invitado");
+        claims.put("type", "password_recovery");
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + (1000 * 60 * 30)))
+                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+    
+    public Claims extractAllClaims(String token){
+        return getAllClaims(token);
     }
 
     private Key getKey() {

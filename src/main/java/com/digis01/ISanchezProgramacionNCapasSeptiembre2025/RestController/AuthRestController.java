@@ -47,8 +47,8 @@ public class AuthRestController {
 
     @PostMapping("/login")
     public ResponseEntity Login(@RequestBody UsuarioJPA usuarioJPA) {
-        Result result = new Result();
-
+        Result result = new Result();   
+        
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -121,7 +121,9 @@ public class AuthRestController {
             String type = jwtService.getClaim(token, claims -> (String) claims.get("type"));
 
             if (!"verification".equals(type)) {
-                throw new RuntimeException("Token invalido");
+                result.status = 498;
+                result.correct = false;
+                result.redirectLink = "http://localhost:8081/usuario/verificadoError";
             }
 
             usuarioJPADAOImplementation.UpdateStatusVerificacion(email, 1);
@@ -160,7 +162,7 @@ public class AuthRestController {
             String tkn = jwtService.generateVerificationToken(email);
             String link = "http://localhost:8080/api/auth/verificar?token=" + tkn;
 
-            emailService.sendEmail(usuario.getEmailUsuario(), link);
+            emailService.sendEmail(usuario.getEmailUsuario(), link, "add");
 
             result.correct = true;
             result.status = 200;

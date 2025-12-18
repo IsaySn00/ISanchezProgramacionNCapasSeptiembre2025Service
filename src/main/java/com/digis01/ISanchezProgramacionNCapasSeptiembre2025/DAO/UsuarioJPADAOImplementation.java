@@ -29,11 +29,11 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
 
     @Autowired
     EntityManager entityManager;
-    
+
     private final PasswordEncoder passwordEncoder;
-    
+
     @Autowired
-    public UsuarioJPADAOImplementation(PasswordEncoder passwordEncoder){
+    public UsuarioJPADAOImplementation(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -64,11 +64,11 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
         Result result = new Result();
 
         try {
-            
+
             String pswrd = usuario.getPasswordUser();
-            
+
             usuario.setPasswordUser(passwordEncoder.encode(pswrd));
-            
+
             entityManager.persist(usuario);
 
             for (DireccionJPA direccion : usuario.DireccionesJPA) {
@@ -397,6 +397,28 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
                     .executeUpdate();
 
             result.correct = true;
+        } catch (Exception ex) {
+            result.correct = false;
+            result.errorMessage = ex.getLocalizedMessage();
+            result.ex = ex;
+        }
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public Result UpdatePassword(String email, String password) {
+        Result result = new Result();
+
+        try {
+            String query = "UPDATE UsuarioJPA SET PasswordUser = :newPassword WHERE emailUsuario = :email";
+            entityManager.createQuery(query)
+                    .setParameter("newPassword", passwordEncoder.encode(password))
+                    .setParameter("email", email)
+                    .executeUpdate();
+            
+            result.correct = true;
+
         } catch (Exception ex) {
             result.correct = false;
             result.errorMessage = ex.getLocalizedMessage();

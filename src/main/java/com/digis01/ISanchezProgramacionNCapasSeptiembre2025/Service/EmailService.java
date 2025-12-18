@@ -14,15 +14,19 @@ public class EmailService {
     @Autowired
     private JavaMailSender javaMailSender;
 
-    public void sendEmail(String to, String link) throws MessagingException {
+    public void sendEmail(String to, String link, String subjectMail) throws MessagingException {
 
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, "UTF-8");
 
         helper.setTo(to);
-        helper.setSubject("Verifica tu cuenta");
 
-        String html = """
+        String html = "";
+
+        if (subjectMail == "add") {
+            helper.setSubject("Verifica tu cuenta");
+
+            html = """
             <html>
                 <body style="font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px;">
                     <div style="max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 10px;">
@@ -41,6 +45,30 @@ public class EmailService {
                </body>
            </html>
         """.formatted(link, link);
+        } else if (subjectMail == "password") {
+            helper.setSubject("Recuperación de Contraseña");
+
+            html = """
+            <html>
+                <body style="font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px;">
+                    <div style="max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 10px;">
+                        <h2 style="color: #333; text-align:center;">Recuperación de contraseña</h2>
+                        <p style="font-size: 16px; color: #555; margin-bottom: 30px">
+                            Hola, da click en el boton para poder recuperar tu contraseña:
+                        </p>
+                        <p style="text-align: center;">
+                        <a href="%s" 
+                            style="background: #007bff; color: white; padding: 12px 20px; 
+                            border-radius: 5px; text-decoration: none; font-size: 16px;">
+                                Recuperar
+                        </a>
+                        </p>
+                    </div>
+               </body>
+           </html>
+        """.formatted(link, link);
+        }
+
         helper.setText(html, true);
         javaMailSender.send(message);
     }

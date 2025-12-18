@@ -1,10 +1,12 @@
 package com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JWT;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -59,9 +61,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-            if (jwtService.isTokenValid(token, userDetails)) {
+            Claims claims = jwtService.extractAllClaims(token);
+            String role = (String) claims.get("role");
+
+            if (role != null) {
                 UsernamePasswordAuthenticationToken authToken
-                        = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        = new UsernamePasswordAuthenticationToken(email, null, List.of(() -> role));
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }

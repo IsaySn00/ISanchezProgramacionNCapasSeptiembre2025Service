@@ -20,4 +20,5 @@ public interface IUsuarioJPA {
     Result GetUsuarioByUserName(String username);
     Result GetUsuarioByEmail(String email);
     Result UpdateStatusVerificacion(String email, int verified);
+    Result UpdatePassword(String email, String password);
 }
