@@ -1,6 +1,7 @@
 package com.digis01.ISanchezProgramacionNCapasSeptiembre2025.RestController;
 
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.DAO.UsuarioJPADAOImplementation;
+import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.DTO.UsuarioCambioPasswordDTO;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.DTO.UsuarioUpdateDTO;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.ErrorCarga;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.Result;
@@ -62,6 +63,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
@@ -77,6 +79,9 @@ public class UsuarioRestController {
 
     @Autowired
     private EmailService emailService;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PreAuthorize("hasAuthority('ROLE_admin')")
     @GetMapping("/usuario")
@@ -323,6 +328,40 @@ public class UsuarioRestController {
             result.status = 500;
         }
         
+        return ResponseEntity.status(result.status).body(result);
+    }
+    
+    @PostMapping("/cambiarPassword")
+    @PreAuthorize("hasAnyRole('ROLE_admin', 'ROLE_usuario')")
+    public ResponseEntity cambiarPassword(@RequestBody UsuarioCambioPasswordDTO dto){
+        Result result = new Result();
+        
+        try{
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String email = auth.getName();
+            
+            UsuarioJPA usuario = (UsuarioJPA) usuarioJPADAOImplemenation.GetUsuarioByEmail(email).object;
+            
+            if(!passwordEncoder.matches(dto.getPasswordActual(), usuario.getPasswordUser())){
+                result.correct = false;
+                result.object = "La contraseña actual es incorrecta";
+                result.status = 400;
+                return ResponseEntity.status(result.status).body(result);
+            }
+            
+            usuarioJPADAOImplemenation.UpdatePassword(email, dto.getPasswordNueva());
+            
+            result.correct = true;
+            result.object = "Contraseña actualizada correctamente";
+            result.status = 200;
+            
+        }catch(Exception ex){
+            result.correct = false;
+            result.object = "Error al cambiar la contraseña";
+            result.errorMessage = ex.getLocalizedMessage();
+            result.ex = ex;
+            result.status = 500;
+        }
         return ResponseEntity.status(result.status).body(result);
     }
     
