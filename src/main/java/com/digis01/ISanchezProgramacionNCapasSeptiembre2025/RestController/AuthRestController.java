@@ -47,8 +47,8 @@ public class AuthRestController {
 
     @PostMapping("/login")
     public ResponseEntity Login(@RequestBody UsuarioJPA usuarioJPA) {
-        Result result = new Result();   
-        
+        Result result = new Result();
+
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -64,6 +64,12 @@ public class AuthRestController {
             UsuarioJPA usuario = (UsuarioJPA) usuarioJPADAOImplementation.GetUsuarioByEmail(usuarioJPA.getEmailUsuario()).object;
 
             if (usuario.getIsVerified() == 0) {
+
+                String tknVerification = jwtService.generateVerificationToken(usuario.getEmailUsuario());
+                String link = "http://localhost:8080/api/auth/verificar?token=" + tknVerification;
+
+                emailService.sendEmail(usuario.getEmailUsuario(), link, "add");
+
                 result.correct = false;
                 result.status = 403;
                 result.object = "Cuenta no verificada";
@@ -123,7 +129,6 @@ public class AuthRestController {
             if (!"verification".equals(type)) {
                 result.status = 498;
                 result.correct = false;
-                result.redirectLink = "http://localhost:8081/usuario/verificadoError";
             }
 
             usuarioJPADAOImplementation.UpdateStatusVerificacion(email, 1);
@@ -131,17 +136,15 @@ public class AuthRestController {
             result.correct = true;
             result.status = 302;
             result.object = "Cuenta verificada de manera exitosa";
-            result.redirectLink = "http://localhost:8081/usuario/verificadoExitoso";
 
         } catch (Exception ex) {
             result.status = 400;
             result.errorMessage = ex.getLocalizedMessage();
             result.correct = false;
             result.ex = ex;
-            result.redirectLink = "http://localhost:8081/usuario/verificadoError";
         }
 
-        return ResponseEntity.status(result.status).header("Location", result.redirectLink).body(result);
+        return ResponseEntity.status(result.status).body(result);
     }
 
     @PostMapping("/reenviar")
@@ -171,6 +174,28 @@ public class AuthRestController {
         } catch (Exception ex) {
             result.correct = false;
             result.status = 400;
+            result.errorMessage = ex.getLocalizedMessage();
+            result.ex = ex;
+        }
+
+        return ResponseEntity.status(result.status).body(result);
+    }
+
+    @GetMapping("/estadoVerificacion")
+    public ResponseEntity estadoVerificacion(@RequestParam String email) {
+        Result result = new Result();
+
+        try {
+
+            UsuarioJPA usuario = (UsuarioJPA) usuarioJPADAOImplementation.GetUsuarioByEmail(email).object;
+
+            result.correct = true;
+            result.status = 200;
+            result.object = usuario.getIsVerified();
+
+        } catch (Exception ex) {
+            result.correct = false;
+            result.status = 500;
             result.errorMessage = ex.getLocalizedMessage();
             result.ex = ex;
         }

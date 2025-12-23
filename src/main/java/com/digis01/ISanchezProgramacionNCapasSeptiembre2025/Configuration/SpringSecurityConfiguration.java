@@ -46,6 +46,7 @@ public class SpringSecurityConfiguration {
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/verificar").permitAll()
                 .requestMatchers("/api/auth/reenviar").permitAll()
+                .requestMatchers("/api/auth/estadoVerificacion").permitAll()
                 .requestMatchers("/api/usuarios/enviarCorreoPassword").permitAll()
                 .requestMatchers("/api/usuarios/recuperarPassword").permitAll()
                 .requestMatchers(
