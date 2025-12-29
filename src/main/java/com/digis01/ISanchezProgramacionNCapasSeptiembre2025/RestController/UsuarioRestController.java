@@ -8,6 +8,7 @@ import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.Result;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.RolJPA;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JPA.UsuarioJPA;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.JWT.JwtService;
+import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.Service.CodigoVerificacionService;
 import com.digis01.ISanchezProgramacionNCapasSeptiembre2025.Service.EmailService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
@@ -79,9 +80,12 @@ public class UsuarioRestController {
 
     @Autowired
     private EmailService emailService;
-    
+
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private CodigoVerificacionService codigoVerificacionService;
 
     @PreAuthorize("hasAuthority('ROLE_admin')")
     @GetMapping("/usuario")
@@ -279,13 +283,13 @@ public class UsuarioRestController {
             Result resultUsuario = usuarioJPADAOImplemenation.GetUsuarioByEmail(email);
 
             if (resultUsuario.correct) {
-                
+
                 String tkn = jwtService.generateRecoveryToken(email);
-                
+
                 String link = "http://localhost:8081/usuario/recuperacionContrasenia?token=" + tkn;
-                
+
                 emailService.sendEmail(email, link, "password");
-                
+
                 result.correct = true;
                 result.object = "Se ha enviado el correo de recuperación de contraseña";
                 result.status = 200;
@@ -303,59 +307,101 @@ public class UsuarioRestController {
         }
         return ResponseEntity.status(result.status).body(result);
     }
-    
+
     @PostMapping("/recuperarPassword")
     @PreAuthorize("hasAuthority('ROLE_invitado')")
-    public ResponseEntity RecuperarPassword(@RequestPart("password") String Password){
+    public ResponseEntity RecuperarPassword(@RequestPart("password") String Password) {
         Result result = new Result();
-        
-        try{
+
+        try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            
+
             String email = auth.getName();
-            
+
             usuarioJPADAOImplemenation.UpdatePassword(email, Password);
-            
+
+            emailService.sendNotification(email, "Recuperación de contraseña");
+
             result.correct = true;
             result.object = "La contraseña se recuperó correctamente.";
             result.status = 200;
-            
-        }catch(Exception ex){
+
+        } catch (Exception ex) {
             result.correct = false;
             result.object = "Error al recuperar la contraseña";
             result.errorMessage = ex.getLocalizedMessage();
             result.ex = ex;
             result.status = 500;
         }
-        
+
         return ResponseEntity.status(result.status).body(result);
     }
-    
-    @PostMapping("/cambiarPassword")
-    @PreAuthorize("hasAnyRole('ROLE_admin', 'ROLE_usuario')")
-    public ResponseEntity cambiarPassword(@RequestBody UsuarioCambioPasswordDTO dto){
+
+    @PostMapping("/password/validarActual")
+    @PreAuthorize("hasAnyRole('ROLE_admin','ROLE_usuario')")
+    public ResponseEntity validarPasswordActual(@RequestBody UsuarioCambioPasswordDTO dto) {
         Result result = new Result();
-        
-        try{
+
+        try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String email = auth.getName();
-            
+
             UsuarioJPA usuario = (UsuarioJPA) usuarioJPADAOImplemenation.GetUsuarioByEmail(email).object;
-            
-            if(!passwordEncoder.matches(dto.getPasswordActual(), usuario.getPasswordUser())){
+
+            if (!passwordEncoder.matches(dto.getPasswordActual(), usuario.getPasswordUser())) {
                 result.correct = false;
                 result.object = "La contraseña actual es incorrecta";
                 result.status = 400;
                 return ResponseEntity.status(result.status).body(result);
             }
+
+            String code = String.valueOf((int) (Math.random() * 900000) + 100000);
+
+            codigoVerificacionService.save(email, code);
+
+            emailService.sendCodigoCambioPassword(email, code);
             
+            result.correct = true;
+            result.object = "Código de verificacion enviado al correo";
+            result.status = 200;
+            
+        } catch (Exception ex) {
+            result.correct = false;
+            result.status = 500;
+            result.errorMessage = ex.getLocalizedMessage();
+            result.ex = ex;
+        }
+        
+        return ResponseEntity.status(result.status).body(result);
+
+    }
+
+    @PostMapping("/password/cambiarPassword")
+    @PreAuthorize("hasAnyRole('ROLE_admin', 'ROLE_usuario')")
+    public ResponseEntity cambiarPassword(@RequestBody UsuarioCambioPasswordDTO dto) {
+        Result result = new Result();
+
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String email = auth.getName();
+
+
+            if (!codigoVerificacionService.isValid(email, dto.getCodigo())) {
+                result.correct = false;
+                result.object = "Código incorrecto o expirado";
+                result.status = 400;
+                return ResponseEntity.status(result.status).body(result);
+            }
+
             usuarioJPADAOImplemenation.UpdatePassword(email, dto.getPasswordNueva());
-            
+
+            emailService.sendNotification(email, "Cambio de contraseña");
+
             result.correct = true;
             result.object = "Contraseña actualizada correctamente";
             result.status = 200;
-            
-        }catch(Exception ex){
+
+        } catch (Exception ex) {
             result.correct = false;
             result.object = "Error al cambiar la contraseña";
             result.errorMessage = ex.getLocalizedMessage();
@@ -364,7 +410,7 @@ public class UsuarioRestController {
         }
         return ResponseEntity.status(result.status).body(result);
     }
-    
+
     @PreAuthorize("hasAuthority('ROLE_admin')")
     @PostMapping("/GetUsuariosDinamico")
     public ResponseEntity GetDinamico(@RequestBody UsuarioJPA usuario) {

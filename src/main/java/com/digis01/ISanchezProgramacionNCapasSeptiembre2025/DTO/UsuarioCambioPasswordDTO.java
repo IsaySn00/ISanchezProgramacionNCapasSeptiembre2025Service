@@ -5,6 +5,7 @@ public class UsuarioCambioPasswordDTO {
 
     private String passwordActual;
     private String passwordNueva;
+    private String codigo;
 
     public String getPasswordActual() {
         return passwordActual;
@@ -21,6 +22,16 @@ public class UsuarioCambioPasswordDTO {
     public void setPasswordNueva(String passwordNueva) {
         this.passwordNueva = passwordNueva;
     }
+
+    public String getCodigo() {
+        return codigo;
+    }
+
+    public void setCodigo(String codigo) {
+        this.codigo = codigo;
+    }
+    
+    
     
     
 }
