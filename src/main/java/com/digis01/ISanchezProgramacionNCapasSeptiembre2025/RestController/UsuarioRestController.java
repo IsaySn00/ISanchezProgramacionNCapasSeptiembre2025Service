@@ -375,6 +375,41 @@ public class UsuarioRestController {
         return ResponseEntity.status(result.status).body(result);
 
     }
+    
+    @PostMapping("/password/validarCodigo")
+    @PreAuthorize("hasAnyRole('ROLE_admin', 'ROLE_usuario')")
+    public ResponseEntity ValidarCodigoVerificacion(@RequestBody UsuarioCambioPasswordDTO dto){
+        
+        Result result = new Result();
+        
+        try{
+            
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String email = auth.getName();
+            
+            if(!codigoVerificacionService.isValid(email, dto.getCodigo())){
+                result.correct = false;
+                result.object = "Código incorrecto o expirado";
+                result.status = 400;
+                return ResponseEntity.status(result.status).body(result);
+            }
+            
+            codigoVerificacionService.markIsVerified(email);
+            result.correct = true;
+            result.object = "Código Validado Correctamente";
+            result.status = 200;
+            
+        }catch(Exception ex){
+            result.correct = false;
+            result.object = "Error al validar código";
+            result.errorMessage = ex.getLocalizedMessage();
+            result.ex = ex;
+            result.status = 500;
+        }
+        
+        return ResponseEntity.status(result.status).body(result);
+        
+    }
 
     @PostMapping("/password/cambiarPassword")
     @PreAuthorize("hasAnyRole('ROLE_admin', 'ROLE_usuario')")
@@ -386,14 +421,16 @@ public class UsuarioRestController {
             String email = auth.getName();
 
 
-            if (!codigoVerificacionService.isValid(email, dto.getCodigo())) {
+            if (!codigoVerificacionService.canChangePassword(email)) {
                 result.correct = false;
-                result.object = "Código incorrecto o expirado";
-                result.status = 400;
+                result.object = "Código no ha sido validado aún";
+                result.status = 403;
                 return ResponseEntity.status(result.status).body(result);
             }
 
             usuarioJPADAOImplemenation.UpdatePassword(email, dto.getPasswordNueva());
+            
+            codigoVerificacionService.invalidate(email);
 
             emailService.sendNotification(email, "Cambio de contraseña");
 
